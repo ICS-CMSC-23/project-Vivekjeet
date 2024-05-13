@@ -1,50 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../providers/auth_provider.dart';
+import './login.dart';
 
 class DonorHomepage extends StatefulWidget {
   const DonorHomepage({super.key});
   @override
-  _DonorHomepageState createState() => _DonorHomepageState();
+  State<DonorHomepage> createState() => _DonorHomepageState();
 }
 
 class _DonorHomepageState extends State<DonorHomepage> {
-  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    final backButton = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: ElevatedButton(
-        onPressed: () async {
-          Navigator.pop(context);
-        },
-        style: const ButtonStyle(
-          backgroundColor: MaterialStatePropertyAll<Color>(Colors.blue),
-        ),
-        child: const Text('Back', style: TextStyle(color: Colors.white)),
-      ),
-    );
+    Stream<User?> userStream = context.watch<MyAuthProvider>().userStream;
 
+    return StreamBuilder<User?>(
+      stream: userStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text("Error: ${snapshot.error}"),
+          );
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (!snapshot.hasData) {
+          return const LoginPage();
+        }
+
+        return displayDonorHomepage(context);
+      },
+    );
+  }
+
+  Scaffold displayDonorHomepage(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.only(left: 40.0, right: 40.0),
-          children: <Widget>[
-            const Text(
-              "Donor Homepage",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25),
-            ),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  backButton
-                ],
-              ),
-            ),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text("Donor Homepage"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: () {
+              context.read<MyAuthProvider>().signOut();
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
     );
   }

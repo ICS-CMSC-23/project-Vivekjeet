@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
+import '../models/user_model.dart';
+import '../providers/auth_provider.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -15,6 +18,7 @@ class _SignupPageState extends State<SignupPage> {
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
     TextEditingController nameController = TextEditingController();
+    TextEditingController usernameController = TextEditingController();
     TextEditingController addressController = TextEditingController();
     TextEditingController contactController = TextEditingController();
 
@@ -36,12 +40,12 @@ class _SignupPageState extends State<SignupPage> {
       ),
       style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
       //Check if valid format
-      validator: (value){
+      validator: (value) {
       if (EmailValidator.validate(value!)) { 
         return null;
-        } else {
+      } else {
         return "Please enter a valid email";
-        }
+      }
       },
     );
 
@@ -101,6 +105,33 @@ class _SignupPageState extends State<SignupPage> {
       },
     );
 
+    //Form field for username
+    final username = TextFormField(
+      key: const Key('usernameField'),
+      controller: usernameController,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.person, color: Color.fromARGB(255, 42, 46, 52)),
+        hintText: "Username",
+        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderRadius: BorderRadius.circular(50),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderRadius: BorderRadius.circular(50),
+          ),
+      ),
+      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      validator: (value) {
+        if (value == null || value.isEmpty){
+          return 'Enter your username';
+        }
+        return null;
+      },
+    );
+
+    //Form field for address
     final address = TextFormField(
       controller: addressController,
       decoration: InputDecoration(
@@ -126,6 +157,7 @@ class _SignupPageState extends State<SignupPage> {
       },
     );
 
+    //Form field for contact number
     final contact = TextFormField(
       controller: contactController,
       decoration: InputDecoration(
@@ -152,6 +184,7 @@ class _SignupPageState extends State<SignupPage> {
       },
     );
 
+    //Radio button to choose if donor or organization
     final userType = Padding(
       padding: const EdgeInsets.symmetric(vertical: 0.0),
       child: Row(
@@ -197,8 +230,23 @@ class _SignupPageState extends State<SignupPage> {
           onPressed: () async {
             //Check first if validated
             if(_signUpKey.currentState!.validate()){
-              //Auth functionality
+              _signUpKey.currentState!.save();
+              
+              UserModel details = UserModel.fromJson({
+                'name': nameController.text.trim(),
+                'userName': usernameController.text.trim(),
+                'addresses': [addressController.text.trim()],
+                'contactNumber': contactController.text.trim(),
+                'type': isDonor ? 'Donor' : 'Organization',
+              });
 
+              await context.read<MyAuthProvider>().signUp(
+                details,
+                emailController.text.trim(),
+                passwordController.text.trim(),
+              );
+
+              if (context.mounted) Navigator.pop(context);
             }else{ //If not validated, a snackbar will pop up telling the user to fill up the form
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -257,6 +305,8 @@ class _SignupPageState extends State<SignupPage> {
             ),
             const SizedBox(height: 20),
             name,
+            const SizedBox(height: 5,),
+            username,
             const SizedBox(height: 5,),
             email,
             const SizedBox(height: 5,),
