@@ -6,8 +6,6 @@ import '../models/user_model.dart';
 class MyAuthProvider with ChangeNotifier {
   late FirebaseAuthAPI authService;
   late Stream<User?> uStream;
-  User? userObj;
-  // UserModel? _details;
 
   MyAuthProvider() {
     authService = FirebaseAuthAPI();
@@ -15,7 +13,6 @@ class MyAuthProvider with ChangeNotifier {
   }
 
   Stream<User?> get userStream => uStream;
-  // UserModel get selected => _details!;
 
   void fetchAuthentication() {
     uStream = authService.getUser();

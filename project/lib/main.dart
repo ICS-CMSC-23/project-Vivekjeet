@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:project/providers/donation_provider.dart';
+import 'package:project/providers/user_provider.dart';
 import 'package:project/screens/landingpage.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,6 +21,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: ((context) => MyAuthProvider())),
+        ChangeNotifierProvider(create: ((context) => UsersProvider())),
+        ChangeNotifierProvider(create: ((context) => DonationsProvider())),
       ],
       child: const MyApp(),
     ),
@@ -37,7 +41,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/': (context) => const DonorHomepage(),
+        '/': (context) => const OrgHomepage(),
         '/login': (context) => const LoginPage(),
         '/donorhomepage': (context) => const DonorHomepage(),
         '/orghomepage': (context) => const OrgHomepage(),

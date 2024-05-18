@@ -18,10 +18,10 @@ class FirebaseAuthAPI {
         password: password,
       );
 
-      await db.collection("user")
+      await db.collection("users")
         .doc(credential.user!.uid)
         .set(details);
-      await db.collection("user")
+      await db.collection("users")
         .doc(credential.user!.uid)
         .update({'id': credential.user!.uid});
     } on FirebaseAuthException catch (e) {

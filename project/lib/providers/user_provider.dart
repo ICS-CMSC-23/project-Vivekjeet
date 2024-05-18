@@ -4,26 +4,19 @@ import '../apis/firebase_users_api.dart';
 
 class UsersProvider with ChangeNotifier {
   late FirebaseUserAPI firebaseService;
-  late Stream<QuerySnapshot> _usersStream;
-  // late Future<DocumentSnapshot<Map<String, dynamic>>> _userDetails;
+  late Stream<QuerySnapshot> _orgsStream;
 
   UsersProvider() {
     firebaseService = FirebaseUserAPI();
-    fetchUsers();
+    fetchOrgs();
   }
 
-  Stream<QuerySnapshot> get users => _usersStream;
-  // Future<DocumentSnapshot<Map<String, dynamic>>> get details => _userDetails;
+  Stream<QuerySnapshot> get organizations => _orgsStream;
 
-  void fetchUsers() {
-    _usersStream = firebaseService.getAllUsers();
+  void fetchOrgs() {
+    _orgsStream = firebaseService.getAllOrganization();
     notifyListeners();
   }
-
-  // void getUserDetails() {
-  //   _userDetails = firebaseService.getUserDetails();
-  //   notifyListeners();
-  // }
 
   // Future<void> addUser(User item) async {
   //   String message = await firebaseService.addUser(item.toJson(item));
