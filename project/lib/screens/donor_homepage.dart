@@ -45,7 +45,6 @@ class _DonorHomepageState extends State<DonorHomepage> {
             icon: const Icon(Icons.exit_to_app),
             onPressed: () {
               context.read<MyAuthProvider>().signOut();
-              Navigator.pop(context);
             },
           ),
         ],

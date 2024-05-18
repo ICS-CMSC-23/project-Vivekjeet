@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project/screens/landingpage.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/': (context) => const LoginPage(),
+        '/': (context) => const DonorHomepage(),
         '/login': (context) => const LoginPage(),
         '/donorhomepage': (context) => const DonorHomepage(),
         '/orghomepage': (context) => const OrgHomepage(),

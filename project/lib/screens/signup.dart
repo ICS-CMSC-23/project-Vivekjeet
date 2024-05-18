@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
 import '../models/user_model.dart';
@@ -13,14 +14,29 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final _signUpKey = GlobalKey<FormState>();
   bool isDonor = true;
+
+  List<TextEditingController> addressControllers = [TextEditingController()];
+  void addAddressField() {
+    setState(() {
+      addressControllers.add(TextEditingController());
+    });
+  }
+  void removeAddressField(int index) {
+    if(index > 0) {
+      setState(() {
+        addressControllers.removeAt(index);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
     TextEditingController nameController = TextEditingController();
     TextEditingController usernameController = TextEditingController();
-    TextEditingController addressController = TextEditingController();
     TextEditingController contactController = TextEditingController();
+    TextEditingController organizationNameController= TextEditingController();
 
     //Form field for email
     final email = TextFormField(
@@ -132,30 +148,60 @@ class _SignupPageState extends State<SignupPage> {
     );
 
     //Form field for address
-    final address = TextFormField(
-      controller: addressController,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.home, color: Color.fromARGB(255, 42, 46, 52)),
-        hintText: "Address",
-        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
-        focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
-            borderRadius: BorderRadius.circular(50),
-          ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
-          borderRadius: BorderRadius.circular(50),
+    final addresses = Column(
+      children: List.generate(addressControllers.length, (index) {
+        return Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5.0),
+                child: TextFormField(
+                  controller: addressControllers[index],
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.home, color: Color.fromARGB(255, 42, 46, 52)),
+                    hintText: "Address",
+                    hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                  style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+                  validator: (value) {
+                    if (value == null || value.isEmpty){
+                      return 'Enter your address';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ),
+            if(index > 0) 
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  removeAddressField(index);
+                },
+              ),
+          ],
+        );
+      }),
+    );
+
+    final addAddressButton = ElevatedButton(
+      onPressed: addAddressField,
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color.fromARGB(255, 42, 46, 52),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
-      //Check if valid format
-      validator: (value) {
-        if (value == null || value.isEmpty){
-          return 'Enter your address';
-        }
-        return null;
-      },
+      child: const Text('Add Address', style: TextStyle(color: Colors.white)),
     );
+
 
     //Form field for contact number
     final contact = TextFormField(
@@ -175,11 +221,15 @@ class _SignupPageState extends State<SignupPage> {
       ),
       style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
       keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
+      ],
       //Check if valid format
       validator: (value) {
         if (value == null || value.isEmpty){
           return 'Enter your contact number';
         }
+
         return null;
       },
     );
@@ -216,6 +266,31 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
 
+    //Form field for organization name
+    final organizationName = TextFormField(
+      controller: organizationNameController,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.business, color: Color.fromARGB(255, 42, 46, 52)),
+        hintText: "Organization Name",
+        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderRadius: BorderRadius.circular(50),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderRadius: BorderRadius.circular(50),
+        ),
+      ),
+      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      validator: (value) {
+        if (isDonor == false && (value == null || value.isEmpty)){
+          return 'Enter your organization name';
+        }
+        return null;
+      },
+    );
+
     //Button to register the new account
     final signupButton = Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
@@ -235,7 +310,7 @@ class _SignupPageState extends State<SignupPage> {
               UserModel details = UserModel.fromJson({
                 'name': nameController.text.trim(),
                 'userName': usernameController.text.trim(),
-                'addresses': [addressController.text.trim()],
+                'addresses': addressControllers.map((controller) => controller.text.trim()).toList(),
                 'contactNumber': contactController.text.trim(),
                 'type': isDonor ? 'Donor' : 'Organization',
               });
@@ -310,12 +385,16 @@ class _SignupPageState extends State<SignupPage> {
             const SizedBox(height: 5,),
             email,
             const SizedBox(height: 5,),
-            address,
+            addresses,
+            addAddressButton,
             const SizedBox(height: 5,),
             contact,
             const SizedBox(height: 5,),
             password,
             userType,
+            if(!isDonor) ...[
+              organizationName
+            ],
             signupButton,
             backButton
           ],
