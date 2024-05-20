@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class FirebaseDonationAPI {
   static final FirebaseFirestore db = FirebaseFirestore.instance;
   static final FirebaseAuth auth = FirebaseAuth.instance;
@@ -15,6 +14,14 @@ class FirebaseDonationAPI {
     return db
         .collection('donations')
         .where('organization', isEqualTo: db.doc('users/${user?.uid}'))
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getDonationsByDonorToOrganization(String donorId, String orgId) {
+    return db
+        .collection('donations')
+        .where('donor', isEqualTo: db.doc('users/$donorId'))
+        .where('organization', isEqualTo: db.doc('users/$orgId'))
         .snapshots();
   }
 

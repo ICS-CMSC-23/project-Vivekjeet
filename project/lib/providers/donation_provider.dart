@@ -8,6 +8,7 @@ class DonationsProvider with ChangeNotifier {
   late DocumentSnapshot _selectedDonationStream;
   late Stream<QuerySnapshot> _donationsStream;
   late Stream<QuerySnapshot> _organizationDonationsStream;
+  late Stream<QuerySnapshot> _donorOrganizationDonationsStream;
 
   DonationsProvider() {
     firebaseService = FirebaseDonationAPI();
@@ -17,6 +18,7 @@ class DonationsProvider with ChangeNotifier {
   Stream<DocumentSnapshot> get selectedDonation => _selectedDonationStream;
   Stream<QuerySnapshot> get donations => _donationsStream;
   Stream<QuerySnapshot> get organizationDonations => _organizationDonationsStream;
+  Stream<QuerySnapshot> get donorOrganizationDonations => _donorOrganizationDonationsStream;
 
   void fetchDonationById(String donationId) async {
     _selectedDonation = await firebaseService.getDonationById(donationId);
@@ -25,6 +27,11 @@ class DonationsProvider with ChangeNotifier {
 
   void fetchDonations() {
     _donationsStream = firebaseService.getDonations();
+    notifyListeners();
+  }
+
+  void fetchDonationsByDonorToOrganization(String donorId, String orgId) {
+    _donorOrganizationDonationsStream = firebaseService.getDonationsByDonorToOrganization(donorId, orgId);
     notifyListeners();
   }
 
