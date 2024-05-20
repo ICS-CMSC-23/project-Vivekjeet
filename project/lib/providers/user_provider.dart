@@ -4,24 +4,24 @@ import '../apis/firebase_user_api.dart';
 
 class UsersProvider with ChangeNotifier {
   late FirebaseUserAPI firebaseService;
-  late Stream<QuerySnapshot> _orgsStream;
   late Stream<DocumentSnapshot> _selectedOrgStream;
+  late Stream<QuerySnapshot> _orgsStream;
 
   UsersProvider() {
     firebaseService = FirebaseUserAPI();
     fetchOrganizations();
   }
 
-  Stream<QuerySnapshot> get organizations => _orgsStream;
   Stream<DocumentSnapshot> get selectedOrganization => _selectedOrgStream;
+  Stream<QuerySnapshot> get organizations => _orgsStream;
 
-  void fetchOrganizations() {
-    _orgsStream = firebaseService.getAllOrganizations();
+  void fetchOrganizationById(String orgId) {
+    _selectedOrgStream = firebaseService.getOrganizationById(orgId);
     notifyListeners();
   }
 
-  void fetchOrganizationDetails(String orgId) {
-    _selectedOrgStream = firebaseService.getOrganizationDetails(orgId);
+  void fetchOrganizations() {
+    _orgsStream = firebaseService.getAllOrganizations();
     notifyListeners();
   }
 

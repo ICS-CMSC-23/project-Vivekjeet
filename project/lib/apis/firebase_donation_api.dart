@@ -7,6 +7,10 @@ class FirebaseDonationAPI {
   static final FirebaseAuth auth = FirebaseAuth.instance;
   User? user = auth.currentUser;
 
+  Future<DocumentSnapshot> getDonationById(String donationId) async {
+    return await db.collection('donations').doc(donationId).get();
+  }
+
   Stream<QuerySnapshot> getDonations() {
     return db
         .collection('donations')

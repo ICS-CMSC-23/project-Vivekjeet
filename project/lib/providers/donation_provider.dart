@@ -5,6 +5,7 @@ import '../models/donation_model.dart';
 
 class DonationsProvider with ChangeNotifier {
   late FirebaseDonationAPI firebaseService;
+  late DocumentSnapshot _selectedDonationStream;
   late Stream<QuerySnapshot> _donationsStream;
   late Stream<QuerySnapshot> _organizationDonationsStream;
 
@@ -13,8 +14,14 @@ class DonationsProvider with ChangeNotifier {
     _donationsStream = firebaseService.getDonations();
   }
 
+  Stream<DocumentSnapshot> get selectedDonation => _selectedDonationStream;
   Stream<QuerySnapshot> get donations => _donationsStream;
   Stream<QuerySnapshot> get organizationDonations => _organizationDonationsStream;
+
+  void fetchDonationById(String donationId) async {
+    _selectedDonation = await firebaseService.getDonationById(donationId);
+    notifyListeners();
+  }
 
   void fetchDonations() {
     _donationsStream = firebaseService.getDonations();
