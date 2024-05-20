@@ -5,7 +5,7 @@ import '../apis/firebase_user_api.dart';
 class UsersProvider with ChangeNotifier {
   late FirebaseUserAPI firebaseService;
   late Stream<QuerySnapshot> _orgsStream;
-  Stream<DocumentSnapshot>? _selectedOrgStream;
+  late Stream<DocumentSnapshot> _selectedOrgStream;
 
   UsersProvider() {
     firebaseService = FirebaseUserAPI();
@@ -13,7 +13,7 @@ class UsersProvider with ChangeNotifier {
   }
 
   Stream<QuerySnapshot> get organizations => _orgsStream;
-  Stream<DocumentSnapshot>? get selectedOrganization => _selectedOrgStream;
+  Stream<DocumentSnapshot> get selectedOrganization => _selectedOrgStream;
 
   void fetchOrganizations() {
     _orgsStream = firebaseService.getAllOrganizations();

@@ -14,6 +14,13 @@ class FirebaseDonationAPI {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> getDonationsOfOrganization(String orgId) {
+    return db
+        .collection('donations')
+        .where('organization', isEqualTo: db.doc('users/$orgId'))
+        .snapshots();
+  }
+
   Future<String> addDonation(Map<String, dynamic> donation) async {
     try {
       final docRef = await db.collection("donations").add(donation);
