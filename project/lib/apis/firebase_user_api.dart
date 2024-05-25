@@ -17,8 +17,14 @@ class FirebaseUserAPI {
   //   }
   // }
 
-  Stream<QuerySnapshot> getAllUsers() {
-    return db.collection("users").snapshots();
+  Stream<DocumentSnapshot> getOrganizationById(String orgId) {
+    return db.collection("users").doc(orgId).snapshots();
+  }
+
+  Stream<QuerySnapshot> getAllOrganizations() {
+    return db.collection("users")
+          .where('type', isEqualTo: 'Organization')
+          .snapshots();
   }
 
   // DocumentSnapshot<Map<String, dynamic>>> getUserDetails() {

@@ -7,10 +7,10 @@ class UserModel {
   List<String> addresses;
   String contactNumber;
   String? type;
-  // bool? isApproved;
-  // String? organizationName;
-  // String? description;
-  // List<String>? proofs;
+  bool? isApproved;
+  String? organizationName;
+  String? description;
+  List<String>? proofs;
 
   UserModel({
     this.id,
@@ -19,10 +19,10 @@ class UserModel {
     required this.addresses,
     required this.contactNumber,
     required this.type,
-    // this.isApproved,
-    // this.organizationName,
-    // this.description,
-    // this.proofs,
+    this.isApproved,
+    this.organizationName,
+    this.description,
+    this.proofs,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -32,10 +32,10 @@ class UserModel {
       addresses: List<String>.from(json['addresses']),
       contactNumber: json['contactNumber'],
       type: json['type'],
-      // isApproved: json['isApproved'],
-      // organizationName: json['organizationName'],
-      // description: json['description'],
-      // proofs: json['proofs'] != null ? List<String>.from(json['proofs']) : null,
+      isApproved: json['isApproved'],
+      organizationName: json['organizationName'],
+      description: json['description'],
+      proofs: json['proofs'] != null ? List<String>.from(json['proofs']) : null,
     );
   }
 
@@ -51,10 +51,10 @@ class UserModel {
       'addresses': addresses,
       'contactNumber': contactNumber,
       'type': type,
-      // 'isApproved': isApproved,
-      // 'organizationName': organizationName,
-      // 'description': description,
-      // 'proofs': proofs,
+      'isApproved': isApproved,
+      'organizationName': organizationName,
+      'description': description,
+      'proofs': proofs,
     };
   }
 }
