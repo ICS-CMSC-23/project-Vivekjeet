@@ -15,13 +15,13 @@ class DonationsProvider with ChangeNotifier {
     _donationsStream = firebaseService.getDonations();
   }
 
-  Stream<DocumentSnapshot> get selectedDonation => _selectedDonationStream;
+  DocumentSnapshot<Object?> get selectedDonation => _selectedDonationStream;
   Stream<QuerySnapshot> get donations => _donationsStream;
   Stream<QuerySnapshot> get organizationDonations => _organizationDonationsStream;
   Stream<QuerySnapshot> get donorOrganizationDonations => _donorOrganizationDonationsStream;
 
   void fetchDonationById(String donationId) async {
-    _selectedDonation = await firebaseService.getDonationById(donationId);
+    _selectedDonationStream = await firebaseService.getDonationById(donationId);
     notifyListeners();
   }
 

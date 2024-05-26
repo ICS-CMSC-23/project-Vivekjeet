@@ -3,9 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:project/providers/donation_provider.dart';
+import 'package:project/providers/user_provider.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import 'login.dart';
+import '../../providers/auth_provider.dart';
+import '../login.dart';
+import 'org_donationdrivepage.dart';
+import 'org_profile.dart';
+import '../../models/user_model.dart';
+import '../../providers/user_provider.dart';
+import '../donor/donor_orglist.dart';
 
 class OrgHomepage extends StatefulWidget {
   const OrgHomepage({super.key});
@@ -79,7 +85,6 @@ class _OrgHomepageState extends State<OrgHomepage> {
   }
 }
 
-
 class DonationsPage extends StatefulWidget {
   const DonationsPage({super.key});
   @override
@@ -87,76 +92,23 @@ class DonationsPage extends StatefulWidget {
 }
 
 class _DonationsPageState extends State<DonationsPage> {
+  final _formKey = GlobalKey<FormState>();
   @override
+  //creating for donors homepage
   Widget build(BuildContext context) {
-    Stream<QuerySnapshot> donationsStream = context.watch<DonationsProvider>().donations;
-    return StreamBuilder(
-      stream: donationsStream,
-      builder: (context, snapshot){
-        if(snapshot.hasError){
-          return Center(
-            child: Text("Error! ${snapshot.error}"),
-          );
-        }else if(snapshot.connectionState == ConnectionState.waiting){
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }else if(!snapshot.hasData){
-          return const Center(
-            child: Text("No friends yet"),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            var donation = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-            return ListTile(
-              //To change
-              title: Text("Category: ${donation['category']}"),
-              
-            );
-          },
-        );
-      }
-    );
-  }
-}
-
-class DonationDrivesPage extends StatelessWidget {
-  const DonationDrivesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Donation Drives Page',
+            'Donations Page',
             style: TextStyle(fontSize: 24),
           ),
-        ],
+          ],
+        
       ),
     );
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'Profile Page',
-            style: TextStyle(fontSize: 24),
-          ),
-        ],
-      ),
-    );
-  }
-}

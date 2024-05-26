@@ -7,9 +7,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import './providers/auth_provider.dart';
 import './screens/login.dart';
-import './screens/donor_homepage.dart';
-import './screens/org_homepage.dart';
+import 'screens/donor/donor_homepage.dart';
+import 'screens/org/org_homepage.dart';
 import './screens/admin_homepage.dart';
+import 'screens/donor/donor_orglist.dart';
+import 'screens/donor/donor_donate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
@@ -41,11 +43,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/': (context) => const OrgHomepage(),
+        '/': (context) => const DonorHomepage(),
         '/login': (context) => const LoginPage(),
         '/donorhomepage': (context) => const DonorHomepage(),
         '/orghomepage': (context) => const OrgHomepage(),
         '/adminhomepage': (context) => const AdminHomepage(),
+        '/donor_donate': (context) => const DonorDonate(),
+        
         
       },
     );

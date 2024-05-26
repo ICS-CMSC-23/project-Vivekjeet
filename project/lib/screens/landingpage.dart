@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_provider.dart';
 import './login.dart';
 import 'admin_homepage.dart';
-import 'donor_homepage.dart';
-import 'org_homepage.dart';
+import 'donor/donor_homepage.dart';
+import 'org/org_homepage.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});

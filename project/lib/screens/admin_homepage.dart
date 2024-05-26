@@ -38,9 +38,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
             Form(
               key: _formKey,
               child: Column(
-                children: [
-                  backButton
-                ],
+                children: [backButton],
               ),
             ),
           ],
