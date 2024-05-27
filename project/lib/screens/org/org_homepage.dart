@@ -6,7 +6,6 @@ import 'package:project/models/donation_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/donation_provider.dart';
-import '../../providers/drive_provider.dart';
 import 'org_donationdrivepage.dart';
 import 'org_profile.dart';
 
@@ -23,7 +22,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
   final List<Widget> _pages = [
     const DonationsPage(),
     const DonationDrivesPage(),
-    const ProfilePage(),
+    const OrgProfilePage(),
   ];
 
   void _onTabChange(int index) {
