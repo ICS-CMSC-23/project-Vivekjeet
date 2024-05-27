@@ -49,8 +49,6 @@ class _OrgHomepageState extends State<OrgHomepage> {
           return const Center(
             child: CircularProgressIndicator(),
           );
-        } else if (!snapshot.hasData) {
-          return const LoginPage();
         }
 
         return displayOrgHomepage(context);

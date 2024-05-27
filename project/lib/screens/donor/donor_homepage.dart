@@ -54,8 +54,6 @@ class _DonorHomepageState extends State<DonorHomepage> {
           return const Center(
             child: CircularProgressIndicator(),
           );
-        } else if (!snapshot.hasData) {
-          return const LoginPage();
         }
 
         return displayDonorHomepage(context);

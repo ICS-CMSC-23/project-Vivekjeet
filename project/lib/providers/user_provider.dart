@@ -6,6 +6,8 @@ class UsersProvider with ChangeNotifier {
   late FirebaseUserAPI firebaseService;
   late Stream<DocumentSnapshot> _selectedOrgStream;
   late Stream<QuerySnapshot> _orgsStream;
+  late Stream<DocumentSnapshot> _uid;
+
 
   UsersProvider() {
     firebaseService = FirebaseUserAPI();
@@ -14,6 +16,7 @@ class UsersProvider with ChangeNotifier {
 
   Stream<DocumentSnapshot> get selectedOrganization => _selectedOrgStream;
   Stream<QuerySnapshot> get organizations => _orgsStream;
+  Stream<DocumentSnapshot> get userId => _uid;
 
   void fetchOrganizationById(String orgId) {
     _selectedOrgStream = firebaseService.getOrganizationById(orgId);
@@ -22,6 +25,11 @@ class UsersProvider with ChangeNotifier {
 
   void fetchOrganizations() {
     _orgsStream = firebaseService.getAllOrganizations();
+    notifyListeners();
+  }
+
+  void fetchUserById(String userId) {
+    _uid = firebaseService.getUserById(userId);
     notifyListeners();
   }
 
