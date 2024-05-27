@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants.dart';
@@ -5,11 +7,14 @@ import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:project/models/user_model.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
 
 class Constants {
   // Primary color
   static var primaryColor = const Color(0xff296e48);
   static var blackColor = Colors.black54;
+  static var iconColor = primaryColor.withOpacity(0.6);
 }
 
 class DonorDonate extends StatefulWidget {
@@ -23,10 +28,10 @@ class _DonorDonateState extends State<DonorDonate> {
   final _formKey = GlobalKey<FormState>();
 
   final Map<String, Icon> _checkboxItems = {
-    'Food': Icon(Icons.fastfood),
-    'Clothes': Icon(Icons.checkroom),
-    'Cash': Icon(Icons.attach_money),
-    'Necessities': Icon(Icons.shopping_cart),
+    'Food': Icon(Icons.fastfood, color: Constants.iconColor),
+    'Clothes': Icon(Icons.checkroom, color: Constants.iconColor),
+    'Cash': Icon(Icons.attach_money, color: Constants.iconColor),
+    'Necessities': Icon(Icons.shopping_cart, color: Constants.iconColor),
   };
 
   final Map<String, bool> _checkboxValues = {
@@ -38,11 +43,13 @@ class _DonorDonateState extends State<DonorDonate> {
 
   List<String> _additionalItems = [];
   String _donationMethod = 'Pick up';
+  bool _isPickup = true;
   String _weightUnit = 'lb';
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   TextEditingController _contactController = TextEditingController();
   TextEditingController _weightController = TextEditingController();
+
   List<String> _addresses = ['Address 1', 'Address 2', 'Address 3'];
   String _selectedAddress = 'Address 1';
   final TextEditingController _textController = TextEditingController();
@@ -51,8 +58,8 @@ class _DonorDonateState extends State<DonorDonate> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Constants.primaryColor.withOpacity(0.6),
-        title: Text('Donor Donate',
+        backgroundColor: Constants.iconColor,
+        title: const Text('Donor Donate',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -65,12 +72,14 @@ class _DonorDonateState extends State<DonorDonate> {
           child: ListView(
             children: [
               SizedBox(height: 20),
-              Text(
-                'What would you like to donate?',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
+              Center(
+                child: Text(
+                  'What would you like to donate?',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Constants.primaryColor),
+                ),
               ),
               SizedBox(height: 10),
               ..._buildCheckboxes(),
@@ -86,12 +95,14 @@ class _DonorDonateState extends State<DonorDonate> {
                     20.0, // Adjust the height between the text and the divider
               ),
               SizedBox(height: 10),
-              Text(
-                'Donation Details',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
+              Center(
+                child: Text(
+                  'Donation Details',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Constants.primaryColor),
+                ),
               ),
               SizedBox(height: 10),
               Text(
@@ -135,18 +146,22 @@ class _DonorDonateState extends State<DonorDonate> {
                 height:
                     20.0, // Adjust the height between the text and the divider
               ),
-              SizedBox(height: 10),
-              Text(
-                'Contact Information',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
-              ),
-              SizedBox(height: 10),
-              _buildContactNumberField(),
-              SizedBox(height: 10),
-              _buildAddressDropdown(),
+              Visibility(
+                  child: Column(children: [
+                    SizedBox(height: 10),
+                    Text(
+                      'Contact Information',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Constants.primaryColor),
+                    ),
+                    SizedBox(height: 10),
+                    _buildContactNumberField(),
+                    SizedBox(height: 10),
+                    _buildAddressDropdown(),
+                  ]),
+                  visible: _isPickup),
               SizedBox(height: 30),
               _buildButtons(context),
             ],
@@ -188,7 +203,8 @@ class _DonorDonateState extends State<DonorDonate> {
   void _addItem(String value) {
     setState(() {
       if (!_checkboxItems.containsKey(value)) {
-        _checkboxItems[value] = Icon(Icons.more_horiz);
+        _checkboxItems[value] =
+            Icon(Icons.more_horiz, color: Constants.iconColor);
         _checkboxValues[value] = false;
         _additionalItems.add(value);
         _textController.clear();
@@ -214,6 +230,11 @@ class _DonorDonateState extends State<DonorDonate> {
       onChanged: (String? newValue) {
         setState(() {
           _donationMethod = newValue!;
+          if (_donationMethod == 'Pick up') {
+            _isPickup = true;
+          } else {
+            _isPickup = false;
+          }
         });
       },
       items: <String>['Pick up', 'Drop off'].map((String value) {
@@ -287,24 +308,50 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
+  double _currentWeight = 0.0;
+
   Widget _buildWeightField() {
-    return TextFormField(
-      controller: _weightController,
-      decoration: InputDecoration(
-        labelText: 'Weight of Donations',
-        border: OutlineInputBorder(),
-      ),
-      keyboardType: TextInputType.number,
-      validator: (value) {
-        if (value!.isEmpty) {
-          return 'Please enter the weight of donations';
-        }
-        if (double.tryParse(value) == null) {
-          return 'Please enter a valid number';
-        }
-        return null;
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Weight of Donations: ${_currentWeight.toStringAsFixed(1)} kg',
+          style: TextStyle(fontSize: 16),
+        ),
+        Slider(
+          value: _currentWeight,
+          onChanged: (newValue) {
+            setState(() {
+              _currentWeight = newValue;
+            });
+          },
+          min: 0.0,
+          max: 100.0,
+          divisions: 100,
+          label: _currentWeight.toStringAsFixed(1),
+        ),
+        if (_weightValidationMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              _weightValidationMessage!,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+      ],
     );
+  }
+
+  String? _weightValidationMessage;
+
+  void _validateWeight() {
+    setState(() {
+      if (_currentWeight <= 0.0) {
+        _weightValidationMessage = 'Please enter a weight greater than zero';
+      } else {
+        _weightValidationMessage = null;
+      }
+    });
   }
 
   Widget _buildContactNumberField() {
