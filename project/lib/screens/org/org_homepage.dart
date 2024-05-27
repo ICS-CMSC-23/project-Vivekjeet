@@ -2,16 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:project/providers/donation_provider.dart';
-import 'package:project/providers/user_provider.dart';
+import 'package:project/models/donation_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../login.dart';
+import '../../providers/donation_provider.dart';
+import '../../providers/drive_provider.dart';
 import 'org_donationdrivepage.dart';
 import 'org_profile.dart';
-import '../../models/user_model.dart';
-import '../../providers/user_provider.dart';
-import '../donor/donor_orglist.dart';
+
 
 class OrgHomepage extends StatefulWidget {
   const OrgHomepage({super.key});
@@ -37,7 +35,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
   @override
   Widget build(BuildContext context) {
     Stream<User?> userStream = context.watch<MyAuthProvider>().userStream;
-
+    
     return StreamBuilder<User?>(
       stream: userStream,
       builder: (context, snapshot) {
@@ -50,7 +48,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
             child: CircularProgressIndicator(),
           );
         }
-
+       
         return displayOrgHomepage(context);
       },
     );
@@ -90,23 +88,52 @@ class DonationsPage extends StatefulWidget {
 }
 
 class _DonationsPageState extends State<DonationsPage> {
-  final _formKey = GlobalKey<FormState>();
+
   @override
   //creating for donors homepage
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            'Donations Page',
-            style: TextStyle(fontSize: 24),
-          ),
+    Stream<QuerySnapshot> donationsStream = context.watch<DonationsProvider>().donations;
+    return StreamBuilder<QuerySnapshot>(
+    stream: donationsStream,
+    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      if (snapshot.hasError) {
+        return Center(
+          child: Text("Error encountered! ${snapshot.error}"),
+        );
+      }
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: CircularProgressIndicator(),
+          // ignore: avoid_print
+        );
+      }
+      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        // Check if snapshot has no data or if docs is empty
+        return const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('No available donations.',
+                style: TextStyle(fontSize: 20, color: Colors.pink)),
+            // Text (snapshot.data!.docs.toString()),
           ],
-        
-      ),
-    );
-  }
-}
-
-
+        );
+      } else {
+        // If snapshot has data and docs is not empty
+        return ListView.builder(
+          itemCount: snapshot.data?.docs.length,
+          physics: const BouncingScrollPhysics(),
+          itemBuilder: ((context, index) {
+            DonationModel donation = DonationModel.fromJson(snapshot.data?.docs[index].data() as Map<String, dynamic>);
+            return Container(
+              child: Text(donation.category)
+               
+            );
+          
+            
+          }),
+        );
+      }
+    },
+  );
+}}
