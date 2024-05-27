@@ -21,10 +21,8 @@ class DriveModel {
   factory DriveModel.fromJson(Map<String, dynamic> json) {
     return DriveModel(
       driveId: json['driveId'],
-      donations: (json['donations'] as List<dynamic>)
-          .map((donation) => FirebaseFirestore.instance.doc(donation as String))
-          .toList(),
-      organization: FirebaseFirestore.instance.doc(json['organization']),
+      donations: List<DocumentReference>.from(json['donations']),
+      organization: json['organization'] as DocumentReference,
       name: json['name'],
       description: json['description'],
       photos: List<String>.from(json['photos']),
