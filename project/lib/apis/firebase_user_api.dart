@@ -27,6 +27,10 @@ class FirebaseUserAPI {
           .snapshots();
   }
 
+  Stream<DocumentSnapshot> getUserById(String userId) {
+    return db.collection("users").doc(userId).snapshots();
+  }
+
   // DocumentSnapshot<Map<String, dynamic>>> getUserDetails() {
   //   return db.collection('user').doc(auth.currentUser?.uid).get();
   // }

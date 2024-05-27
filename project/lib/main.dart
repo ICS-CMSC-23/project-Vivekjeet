@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/': (context) => const DonorHomepage(),
+        '/': (context) => LandingPage(),
         '/login': (context) => const LoginPage(),
         '/donorhomepage': (context) => const DonorHomepage(),
         '/orghomepage': (context) => const OrgHomepage(),

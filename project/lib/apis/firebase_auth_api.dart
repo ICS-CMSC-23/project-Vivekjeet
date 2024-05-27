@@ -23,7 +23,7 @@ class FirebaseAuthAPI {
         .set(details);
       await db.collection("users")
         .doc(credential.user!.uid)
-        .update({'id': credential.user!.uid});
+        .update({'userId': credential.user!.uid});
     } on FirebaseAuthException catch (e) {
       //possible to return something more useful
       //than just print an error message to improve UI/UX
