@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
 import '../models/user_model.dart';
@@ -28,6 +32,33 @@ class _SignupPageState extends State<SignupPage> {
       });
     }
   }
+
+  Map<int, File> _proofs = {};
+  int _nextProofId = 0;
+  Future<void> _pickImageFromGallery(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFiles = await picker.pickMultiImage();
+
+    if (pickedFiles != null) {
+      setState(() {
+        for (var pickedFile in pickedFiles) {
+          _proofs[_nextProofId++] = File(pickedFile.path);
+        }
+      });
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _proofs[_nextProofId++] = File(pickedFile.path);
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -291,6 +322,61 @@ class _SignupPageState extends State<SignupPage> {
       },
     );
 
+    // "Upload Proofs" section
+    final uploadProofs = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Upload proofs: "),
+            IconButton(
+              icon: const Icon(Icons.camera_alt),
+              onPressed: () {
+                _pickImageFromCamera();
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.photo),
+              onPressed: () {
+                _pickImageFromGallery(ImageSource.gallery);
+              },
+            ),   
+          ],
+        ),
+        Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: _proofs.entries.map((entry) {
+          final id = entry.key;
+          final file = entry.value;
+          return Stack(
+            children: [
+              Image.file(
+                file,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red,),
+                  onPressed: () {
+                    setState(() {
+                      _proofs.remove(id);
+                    });
+                  },
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      )
+      ]
+    );
+
     //Button to register the new account
     final signupButton = Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
@@ -397,7 +483,9 @@ class _SignupPageState extends State<SignupPage> {
             password,
             userType,
             if(!isDonor) ...[
-              organizationName
+              organizationName,
+              const SizedBox(height: 5),
+              uploadProofs,
             ],
             signupButton,
             backButton
@@ -407,3 +495,4 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 }
+
