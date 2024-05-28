@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,8 +33,10 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
+  List<File> images = [];
   Map<int, File> _proofs = {};
   int _nextProofId = 0;
+  List<String> base64String = [];
   Future<void> _pickImageFromGallery(ImageSource source) async {
     final picker = ImagePicker();
     final pickedFiles = await picker.pickMultiImage();
@@ -43,8 +45,14 @@ class _SignupPageState extends State<SignupPage> {
       setState(() {
         for (var pickedFile in pickedFiles) {
           _proofs[_nextProofId++] = File(pickedFile.path);
+          images.add(File(pickedFile.path));
         }
       });
+    }
+    for (var pickedFile in pickedFiles) {
+      List<int> imageBytes = File(pickedFile!.path).readAsBytesSync();
+      base64String.add(base64Encode(imageBytes));
+      print(base64String);
     }
   }
 
@@ -55,10 +63,23 @@ class _SignupPageState extends State<SignupPage> {
     if (pickedFile != null) {
       setState(() {
         _proofs[_nextProofId++] = File(pickedFile.path);
+        images.add(File(pickedFile.path));
       });
     }
+
+    List<int> imageBytes = File(pickedFile!.path).readAsBytesSync();
+    base64String.add(base64Encode(imageBytes));
+    print(base64String);
   }
 
+  void removeImage(int id) {
+    setState(() {
+      _proofs.remove(id);
+      images.removeAt(id);
+      base64String.removeAt(id); 
+      print(base64String);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +386,7 @@ class _SignupPageState extends State<SignupPage> {
                   icon: Icon(Icons.delete, color: Colors.red,),
                   onPressed: () {
                     setState(() {
-                      _proofs.remove(id);
+                      removeImage(id);
                     });
                   },
                 ),
@@ -392,7 +413,7 @@ class _SignupPageState extends State<SignupPage> {
             //Check first if validated
             if(_signUpKey.currentState!.validate()){
               _signUpKey.currentState!.save();
-              
+
               UserModel details = UserModel.fromJson({
                 'name': nameController.text.trim(),
                 'userName': usernameController.text.trim(),
@@ -409,6 +430,7 @@ class _SignupPageState extends State<SignupPage> {
                 details,
                 emailController.text.trim(),
                 passwordController.text.trim(),
+                images
               );
 
               if (context.mounted) Navigator.pop(context);

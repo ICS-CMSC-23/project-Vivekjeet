@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../apis/firebase_auth_api.dart'; 
@@ -19,8 +21,8 @@ class MyAuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signUp(UserModel details, String email, String password) async {
-    await authService.signUp(details.toJson(details), email, password);
+  Future<void> signUp(UserModel details, String email, String password, List<File> proofs) async {
+    await authService.signUp(details.toJson(details), email, password, proofs);
     notifyListeners();
   }
 
