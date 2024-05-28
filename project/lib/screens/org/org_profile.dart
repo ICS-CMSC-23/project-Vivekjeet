@@ -32,18 +32,52 @@ class _OrgProfilePageState extends State<OrgProfilePage> {
     }
   }
 
+  final MaterialStateProperty<Icon?> thumbIcon = MaterialStateProperty.resolveWith<Icon?>(
+    (Set<MaterialState> states){
+      if(states.contains(MaterialState.selected)){
+          return const Icon(Icons.check);
+      }
+      return const Icon(Icons.close);
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: _orgData.isNotEmpty
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text('Welcome, ${_orgData['organizationName']}!'),
-                ],
+        ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('Welcome, ${_orgData['organizationName']}!'),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20), // Adjust the curvature as needed
+                  color: Colors.grey[200], // Set the background color
+                ),
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    _orgData['isOpen']
+                          ? Text("Open for donations.")
+                          : Text("Closed for donations."),
+                    Switch(
+                      thumbIcon: thumbIcon,
+                        value: _orgData['isOpen'],
+                        onChanged: (bool value){
+                          setState(() {
+                            _orgData['isOpen'] = value;
+                          });
+                        },
+                        activeColor: const Color.fromARGB(255,186,255,201), // Change the color of the switch when it is on
+                        inactiveThumbColor: const Color.fromARGB(255,255,179,186)
+                    )
+                  ],
+                ),
               )
-            : const CircularProgressIndicator(), 
+            ],
+          )
+        : const CircularProgressIndicator(), 
       ),
     );
   }

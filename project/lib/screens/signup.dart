@@ -452,7 +452,8 @@ class _SignupPageState extends State<SignupPage> {
                 'isApproved': false,
                 'organizationName': organizationNameController.text.isEmpty == true ? null : organizationNameController.text.trim(),
                 'description': null,
-                'proofs': null
+                'proofs': null,
+                'isOpen': isDonor ? null : false
               });
 
               await context.read<MyAuthProvider>().signUp(

@@ -11,6 +11,7 @@ class UserModel {
   String? organizationName;
   String? description;
   List<String>? proofs;
+  bool? isOpen;
 
   UserModel({
     this.id,
@@ -23,6 +24,7 @@ class UserModel {
     this.organizationName,
     this.description,
     this.proofs,
+    this.isOpen
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,7 @@ class UserModel {
       organizationName: json['organizationName'],
       description: json['description'],
       proofs: json['proofs'] != null ? List<String>.from(json['proofs']) : null,
+      isOpen: json['isOpen']
     );
   }
 
@@ -55,6 +58,7 @@ class UserModel {
       'organizationName': organizationName,
       'description': description,
       'proofs': proofs,
+      'isOpen': isOpen
     };
   }
 }
