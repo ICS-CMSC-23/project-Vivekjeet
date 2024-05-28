@@ -19,12 +19,45 @@ class _SignupPageState extends State<SignupPage> {
   final _signUpKey = GlobalKey<FormState>();
   bool isDonor = true;
 
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+  late TextEditingController nameController;
+  late TextEditingController usernameController;
+  late TextEditingController contactController;
+  late TextEditingController organizationNameController;
   List<TextEditingController> addressControllers = [TextEditingController()];
+
+  @override
+  void initState() {
+    super.initState();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+    nameController = TextEditingController();
+    usernameController = TextEditingController();
+    contactController = TextEditingController();
+    organizationNameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    usernameController.dispose();
+    contactController.dispose();
+    organizationNameController.dispose();
+    for (var controller in addressControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+  
   void addAddressField() {
     setState(() {
       addressControllers.add(TextEditingController());
     });
   }
+
   void removeAddressField(int index) {
     if(index > 0) {
       setState(() {
@@ -36,7 +69,6 @@ class _SignupPageState extends State<SignupPage> {
   List<File> images = [];
   Map<int, File> _proofs = {};
   int _nextProofId = 0;
-  List<String> base64String = [];
   Future<void> _pickImageFromGallery(ImageSource source) async {
     final picker = ImagePicker();
     final pickedFiles = await picker.pickMultiImage();
@@ -48,11 +80,6 @@ class _SignupPageState extends State<SignupPage> {
           images.add(File(pickedFile.path));
         }
       });
-    }
-    for (var pickedFile in pickedFiles) {
-      List<int> imageBytes = File(pickedFile!.path).readAsBytesSync();
-      base64String.add(base64Encode(imageBytes));
-      print(base64String);
     }
   }
 
@@ -66,29 +93,17 @@ class _SignupPageState extends State<SignupPage> {
         images.add(File(pickedFile.path));
       });
     }
-
-    List<int> imageBytes = File(pickedFile!.path).readAsBytesSync();
-    base64String.add(base64Encode(imageBytes));
-    print(base64String);
   }
 
   void removeImage(int id) {
     setState(() {
       _proofs.remove(id);
       images.removeAt(id);
-      base64String.removeAt(id); 
-      print(base64String);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-    TextEditingController nameController = TextEditingController();
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController contactController = TextEditingController();
-    TextEditingController organizationNameController= TextEditingController();
 
     //Form field for email
     final email = TextFormField(
@@ -298,6 +313,11 @@ class _SignupPageState extends State<SignupPage> {
             onChanged: (value) {
               setState(() {
                 isDonor = value!;
+                if (isDonor) {
+                  organizationNameController.clear();
+                  _proofs.clear();
+                  images.clear();
+                }
               });
             },
             activeColor: const Color.fromARGB(255, 42, 46, 52),
@@ -320,6 +340,7 @@ class _SignupPageState extends State<SignupPage> {
 
     //Form field for organization name
     final organizationName = TextFormField(
+      key: const Key('organizationNameField'),
       controller: organizationNameController,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.business, color: Color.fromARGB(255, 42, 46, 52)),
@@ -412,6 +433,14 @@ class _SignupPageState extends State<SignupPage> {
           onPressed: () async {
             //Check first if validated
             if(_signUpKey.currentState!.validate()){
+              if (!isDonor && _proofs.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please upload at least one proof for Organization')
+                  )
+                );
+                return;
+              }
               _signUpKey.currentState!.save();
 
               UserModel details = UserModel.fromJson({
