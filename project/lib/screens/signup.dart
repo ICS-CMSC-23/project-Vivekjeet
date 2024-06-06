@@ -402,7 +402,7 @@ class _SignupPageState extends State<SignupPage> {
                 top: 0,
                 right: 0,
                 child: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red,),
+                  icon: const Icon(Icons.delete, color: Colors.red,),
                   onPressed: () {
                     setState(() {
                       removeImage(id);

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../apis/firebase_user_api.dart';
@@ -33,9 +35,15 @@ class UsersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Future<void> addUser(User item) async {
-  //   String message = await firebaseService.addUser(item.toJson(item));
-  //   print(message);
-  //   notifyListeners();
-  // }
+  void editOrg(String? id, String username, String orgname, String contact, String description) async {
+    String message = await firebaseService.editOrg(id, username, orgname, contact, description);
+    print(message);
+    notifyListeners();
+  }
+
+  void uploadProfilePicture(String? id, File profilePicture) async {
+    String message = await firebaseService.uploadProfilePicture(id, profilePicture);
+    print(message);
+    notifyListeners();
+  }
 }
