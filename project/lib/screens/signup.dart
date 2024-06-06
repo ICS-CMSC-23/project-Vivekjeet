@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -109,19 +107,19 @@ class _SignupPageState extends State<SignupPage> {
     final email = TextFormField(
       controller: emailController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.email, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.email, color: Color(0xFF618264)),
         hintText: "Email",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       //Check if valid format
       validator: (value) {
       if (EmailValidator.validate(value!)) { 
@@ -137,19 +135,19 @@ class _SignupPageState extends State<SignupPage> {
       controller: passwordController,
       obscureText: true,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.lock, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.lock, color: Color(0xFF618264)),
         hintText: "Password",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       //Check if not null and if >= 6
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -167,19 +165,19 @@ class _SignupPageState extends State<SignupPage> {
       key: const Key('nameField'),
       controller: nameController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.person, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.person, color: Color(0xFF618264)),
         hintText: "Name",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       validator: (value) {
         if (value == null || value.isEmpty){
           return 'Enter your name';
@@ -193,19 +191,19 @@ class _SignupPageState extends State<SignupPage> {
       key: const Key('usernameField'),
       controller: usernameController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.person, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.person, color: Color(0xFF618264)),
         hintText: "Username",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       validator: (value) {
         if (value == null || value.isEmpty){
           return 'Enter your username';
@@ -225,19 +223,19 @@ class _SignupPageState extends State<SignupPage> {
                 child: TextFormField(
                   controller: addressControllers[index],
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.home, color: Color.fromARGB(255, 42, 46, 52)),
+                    prefixIcon: const Icon(Icons.home, color: Color(0xFF618264)),
                     hintText: "Address",
                     hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+                      borderSide: const BorderSide(color: Color(0xFF618264)), 
                       borderRadius: BorderRadius.circular(50),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+                      borderSide: const BorderSide(color: Color(0xFF618264)), 
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+                  style: const TextStyle(color: Color(0xFF618264)),
                   validator: (value) {
                     if (value == null || value.isEmpty){
                       return 'Enter your address';
@@ -263,7 +261,7 @@ class _SignupPageState extends State<SignupPage> {
       onPressed: addAddressField,
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(
-          const Color.fromARGB(255, 42, 46, 52),
+          const Color(0xFF618264),
         ),
       ),
       child: const Text('Add Address', style: TextStyle(color: Colors.white)),
@@ -274,19 +272,19 @@ class _SignupPageState extends State<SignupPage> {
     final contact = TextFormField(
       controller: contactController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.phone, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.phone, color: Color(0xFF618264)),
         hintText: "Contact Number",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       keyboardType: TextInputType.number,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.digitsOnly,
@@ -320,7 +318,7 @@ class _SignupPageState extends State<SignupPage> {
                 }
               });
             },
-            activeColor: const Color.fromARGB(255, 42, 46, 52),
+            activeColor: const Color(0xFF618264),
           ),
           const Text('Donor'),
           Radio(
@@ -331,7 +329,7 @@ class _SignupPageState extends State<SignupPage> {
                 isDonor = value!;
               });
             },
-            activeColor: const Color.fromARGB(255, 42, 46, 52)
+            activeColor: const Color(0xFF618264)
           ),
           const Text('Organization'),
         ],
@@ -343,19 +341,19 @@ class _SignupPageState extends State<SignupPage> {
       key: const Key('organizationNameField'),
       controller: organizationNameController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.business, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.business, color: Color(0xFF618264)),
         hintText: "Organization Name",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Color(0xFF618264)),
       validator: (value) {
         if (isDonor == false && (value == null || value.isEmpty)){
           return 'Enter your organization name';
@@ -474,7 +472,7 @@ class _SignupPageState extends State<SignupPage> {
           },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color?>(
-              const Color.fromARGB(255, 42, 46, 52),
+              const Color(0xFF618264),
             ),
           ),
           child: const Text('S I G N U P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -489,12 +487,12 @@ class _SignupPageState extends State<SignupPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text("Already have an account? ", style: TextStyle(color: Color.fromARGB(255, 42, 46, 52))),
+          const Text("Already have an account? ", style: TextStyle(color: Color(0xFF618264))),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
             },
-            child: const Text("Login here", style: TextStyle(color: Color.fromARGB(255, 42, 46, 52), fontWeight: FontWeight.bold),),
+            child: const Text("Login here", style: TextStyle(color: Color(0xFF618264), fontWeight: FontWeight.bold),),
           )
         ],
       )
@@ -502,23 +500,24 @@ class _SignupPageState extends State<SignupPage> {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      body: Center(
+      body: SafeArea(
+        child: Center(
         child: Form(
           key: _signUpKey,
-          child:ListView(
+          child: ListView(
           shrinkWrap: true,
           padding: const EdgeInsets.only(left: 40.0, right: 40.0),
           children: <Widget>[
-            const Icon(Icons.logo_dev, size: 50, color: Color.fromARGB(255, 42, 46, 52),),
+            Image.asset('images/login_logo.png'),
             const Text(
-              "LET'S GET STARTED",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, color: Color.fromARGB(255, 42, 46, 52)),
+              "  LET'S GET STARTED",
+              textAlign: TextAlign.left,
+              style: TextStyle(fontSize: 25, color: Color(0xFF618264)),
             ),
             const Text(
-              "Create an account to donate!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 42, 46, 52)),
+              "  Create an account to make a change!",
+              textAlign: TextAlign.left,
+              style: TextStyle(fontSize: 18, color: Color(0xFF618264)),
             ),
             const SizedBox(height: 20),
             name,
@@ -544,6 +543,7 @@ class _SignupPageState extends State<SignupPage> {
           ],
         ),)
       ),
+    )
     );
   }
 }
