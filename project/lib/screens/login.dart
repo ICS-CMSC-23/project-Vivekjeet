@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       key: const Key('emailField'),
       controller: emailController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.email, color: Color(0xFF618264)),
+        prefixIcon: const Icon(Icons.alternate_email, color: Color(0xFF618264)),
         hintText: "Email",
         hintStyle: const TextStyle(color: Color(0xFF618264)),
         focusedBorder: OutlineInputBorder(
@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       //Checks if correct format
       validator: (value){
       if (EmailValidator.validate(value!)) { 
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       //Check if not null and if length >= 6ds
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -96,6 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 emailController.text.trim(),
                 passwordController.text.trim(),
               );
+              if (context.mounted) Navigator.pop(context);
             }else{ //If not validated, a snackbar will pop up telling the user to fill up the form
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -189,9 +190,9 @@ class _LoginPageState extends State<LoginPage> {
             Image.asset('images/login_logo.png'),
             const SizedBox(height: 10),
             const Text(
-              "  Log In",
+              " Welcome back!",
               textAlign: TextAlign.left,
-              style: TextStyle(fontSize: 32, color: Color(0xFF618264)),
+              style: TextStyle(fontSize: 32, color: Colors.black),
             ),
             const SizedBox(height: 20),
             email,
@@ -216,7 +217,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 10),
             googleLogin,
-            signUpButton
+            signUpButton,
+            const SizedBox(height: 15),
           ],
         ),
         )

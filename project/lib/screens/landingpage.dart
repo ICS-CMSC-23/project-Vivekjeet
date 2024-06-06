@@ -52,7 +52,6 @@ class UserHomepage extends StatelessWidget {
   }
 
   Widget _buildHomepageWidget(BuildContext context, String userType) {
-    Navigator.pop(context);
     switch (userType) {
       case 'Donor':
         return const DonorHomepage();

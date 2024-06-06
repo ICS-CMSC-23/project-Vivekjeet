@@ -107,7 +107,7 @@ class _SignupPageState extends State<SignupPage> {
     final email = TextFormField(
       controller: emailController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.email, color: Color(0xFF618264)),
+        prefixIcon: const Icon(Icons.alternate_email, color: Color(0xFF618264)),
         hintText: "Email",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
@@ -119,7 +119,7 @@ class _SignupPageState extends State<SignupPage> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       //Check if valid format
       validator: (value) {
       if (EmailValidator.validate(value!)) { 
@@ -147,7 +147,7 @@ class _SignupPageState extends State<SignupPage> {
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       //Check if not null and if >= 6
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -177,7 +177,7 @@ class _SignupPageState extends State<SignupPage> {
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       validator: (value) {
         if (value == null || value.isEmpty){
           return 'Enter your name';
@@ -203,7 +203,7 @@ class _SignupPageState extends State<SignupPage> {
             borderRadius: BorderRadius.circular(50),
           ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       validator: (value) {
         if (value == null || value.isEmpty){
           return 'Enter your username';
@@ -235,7 +235,7 @@ class _SignupPageState extends State<SignupPage> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  style: const TextStyle(color: Color(0xFF618264)),
+                  style: const TextStyle(color: Colors.black),
                   validator: (value) {
                     if (value == null || value.isEmpty){
                       return 'Enter your address';
@@ -284,7 +284,7 @@ class _SignupPageState extends State<SignupPage> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       keyboardType: TextInputType.number,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.digitsOnly,
@@ -353,7 +353,7 @@ class _SignupPageState extends State<SignupPage> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color(0xFF618264)),
+      style: const TextStyle(color: Colors.black),
       validator: (value) {
         if (isDonor == false && (value == null || value.isEmpty)){
           return 'Enter your organization name';
@@ -512,12 +512,12 @@ class _SignupPageState extends State<SignupPage> {
             const Text(
               "  LET'S GET STARTED",
               textAlign: TextAlign.left,
-              style: TextStyle(fontSize: 25, color: Color(0xFF618264)),
+              style: TextStyle(fontSize: 25, color: Colors.black),
             ),
             const Text(
               "  Create an account to make a change!",
               textAlign: TextAlign.left,
-              style: TextStyle(fontSize: 18, color: Color(0xFF618264)),
+              style: TextStyle(fontSize: 18, color: Colors.black),
             ),
             const SizedBox(height: 20),
             name,
@@ -539,7 +539,8 @@ class _SignupPageState extends State<SignupPage> {
               uploadProofs,
             ],
             signupButton,
-            backButton
+            backButton,
+            const SizedBox(height: 15),
           ],
         ),)
       ),
