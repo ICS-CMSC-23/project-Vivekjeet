@@ -42,7 +42,7 @@ class FirebaseDriveAPI {
       List<String> urls = [];
       for (int i = 0; i < photos.length; i++) {
         try {
-          String imagePath = "users/$orgId/images/donationDrives/photo$i";
+          String imagePath = "users/$orgId/images/donationDrives/${drive['driveName']}/photo$i";
           TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
           String downloadUrl = await snapshot.ref.getDownloadURL();
           urls.add(downloadUrl);

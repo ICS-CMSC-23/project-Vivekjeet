@@ -69,7 +69,19 @@ class _AddDonationDrivePageState extends State<AddDonationDrivePage> {
             children: [
               TextFormField(
                 controller: _driveNameController,
-                decoration: const InputDecoration(labelText: 'Drive Name'),
+                decoration: const InputDecoration(
+                labelText: 'Drive Name',
+                labelStyle: TextStyle(color: Color(0xFF618264)), // Label color
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF618264)), // Border color when not focused
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF618264), width: 2.0), // Border color when focused
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                ),
+                style: const TextStyle(fontSize: 16.0),
+                cursorColor: const Color(0xFF618264),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a drive name';
@@ -77,9 +89,22 @@ class _AddDonationDrivePageState extends State<AddDonationDrivePage> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10,),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(
+                labelText: 'Description',
+                labelStyle: TextStyle(color: Color(0xFF618264)), // Label color
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF618264)), // Border color when not focused
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF618264), width: 2.0), // Border color when focused
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+              ),
+              maxLines: null,
+              style: const TextStyle(fontSize: 16.0),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a description';
@@ -147,18 +172,92 @@ class _AddDonationDrivePageState extends State<AddDonationDrivePage> {
                       'photos': [],
                       'donations': []
                     });
-                    
-                    await context.read<DriveProvider>().addDrive(newDrive, driveImages);
-                    if(context.mounted) Navigator.pop(context);
+                    await _showConfirmationDialog(context, newDrive, driveImages);
                   }
 
                 },
-                child: const Text('Add Drive'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF618264),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+  Future<void> _showConfirmationDialog(BuildContext context, DriveModel newDrive, List<File> driveImages) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                const Text('Please review the details before adding:'),
+                const SizedBox(height: 10),
+                Text('Drive Name: ${newDrive.driveName}'),
+                Text('Description: ${newDrive.description}'),
+                Text('Photos: '),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: driveImages.map((image) {
+                    return Image.file(image, width: 100, height: 100, fit: BoxFit.cover);
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 168, 43, 34),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await context.read<DriveProvider>().addDrive(newDrive, driveImages);
+                if(context.mounted) Navigator.pop(context);
+                if(context.mounted) Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF618264),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              child: const Text(
+                'Confirm',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              )
+            ),
+          ],
+        );
+      },
     );
   }
 }
