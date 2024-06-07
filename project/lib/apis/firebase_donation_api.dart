@@ -11,9 +11,10 @@ class FirebaseDonationAPI {
   }
 
   Stream<QuerySnapshot> getDonations() {
+    DocumentReference orgRef = db.doc('users/${user!.uid}');
     return db
         .collection('donations')
-        .where('organization', isEqualTo: db.doc('users/${user?.uid}'))
+        .where('organization', isEqualTo: orgRef)
         .snapshots();
   }
 

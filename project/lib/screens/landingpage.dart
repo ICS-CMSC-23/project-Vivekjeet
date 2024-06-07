@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project/screens/splashscreen.dart';
 import 'admin_homepage.dart';
 import 'donor/donor_homepage.dart';
 import 'login.dart';
@@ -18,7 +19,7 @@ class LandingPage extends StatelessWidget {
           if (snapshot.hasData) {
             return UserHomepage(user: snapshot.data!);
           } else {
-            return const LoginPage();
+            return const SplashScreen();
           }
         }
       },

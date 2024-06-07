@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseAuthAPI {
   static final FirebaseAuth auth = FirebaseAuth.instance;
@@ -9,8 +12,23 @@ class FirebaseAuthAPI {
     return auth.authStateChanges();
   }
 
+  Future<List<String>> uploadProofs(UserCredential credential, List<File> proofs) async {
+    List<String> urls = [];
+    for (int i = 0; i < proofs.length; i++) {
+      try {
+        String imagePath = "proofs/${credential.user!.email}/images$i";
+        TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(proofs[i]);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        urls.add(downloadUrl);
+      } catch (e) {
+        print('Error uploading proof $i: $e');
+      }
+    }
+    return urls;
+  }
+
   Future<void> signUp(
-    Map<String, dynamic> details, String email, String password) async {
+    Map<String, dynamic> details, String email, String password, List<File> proofs) async {
     UserCredential credential;
     try {
       credential = await auth.createUserWithEmailAndPassword(
@@ -24,6 +42,15 @@ class FirebaseAuthAPI {
       await db.collection("users")
         .doc(credential.user!.uid)
         .update({'userId': credential.user!.uid});
+
+      if(proofs.isNotEmpty){
+        List<String> urls = await uploadProofs(credential, proofs);
+      
+        await db.collection("users")
+          .doc(credential.user!.uid)
+          .update({'proofs': urls});
+      }
+      
     } on FirebaseAuthException catch (e) {
       //possible to return something more useful
       //than just print an error message to improve UI/UX

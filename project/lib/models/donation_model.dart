@@ -34,15 +34,15 @@ class DonationModel {
   factory DonationModel.fromJson(Map<String, dynamic> json) {
     return DonationModel(
       donationId: json['donationId'],
-      donor: FirebaseFirestore.instance.doc(json['donor']),
-      organization: FirebaseFirestore.instance.doc(json['organization']),
+      donor: json['donor'] as DocumentReference,
+      organization: json['organization'] as DocumentReference,
       category: json['category'],
       weight: json['weight'].toDouble(),
       photo: json['photo'],
       isPickup: json['isPickup'],
       addresses: json['addresses'] != null ? List<String>.from(json['addresses']) : null,
       contactNumber: json['contactNumber'],
-      schedule: DateTime.parse(json['schedule']),
+      schedule: (json['schedule'] as Timestamp).toDate(),
       status: json['status'],
       qrCode: json['qrCode'],
       

@@ -1,11 +1,10 @@
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
 import 'signup.dart';
-// import './donor_homepage.dart';
-// import './org_homepage.dart';
-// import './admin_homepage.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,19 +24,19 @@ class _LoginPageState extends State<LoginPage> {
       key: const Key('emailField'),
       controller: emailController,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.email, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.alternate_email, color: Color(0xFF618264)),
         hintText: "Email",
-        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+        hintStyle: const TextStyle(color: Color(0xFF618264)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Colors.black),
       //Checks if correct format
       validator: (value){
       if (EmailValidator.validate(value!)) { 
@@ -54,19 +53,19 @@ class _LoginPageState extends State<LoginPage> {
       controller: passwordController,
       obscureText: true,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.lock, color: Color.fromARGB(255, 42, 46, 52)),
+        prefixIcon: const Icon(Icons.lock, color: Color(0xFF618264)),
         hintText: "Password",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+            borderSide: const BorderSide(color: Color(0xFF618264)), 
             borderRadius: BorderRadius.circular(50),
           ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 42, 46, 52)), 
+          borderSide: const BorderSide(color: Color(0xFF618264)), 
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 42, 46, 52)),
+      style: const TextStyle(color: Colors.black),
       //Check if not null and if length >= 6ds
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -97,6 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 emailController.text.trim(),
                 passwordController.text.trim(),
               );
+              if (context.mounted) Navigator.pop(context);
             }else{ //If not validated, a snackbar will pop up telling the user to fill up the form
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
           },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color?>(
-              const Color.fromARGB(255, 42, 46, 52),
+              const Color(0xFF618264),
             ),
           ),
           child: const Row(
@@ -121,6 +121,40 @@ class _LoginPageState extends State<LoginPage> {
       )
     );
 
+    final googleLogin = Padding(
+      key: const Key('loginButton'),
+      padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+      child: SizedBox(
+        width: 200.0, // Adjust width as needed
+        height: 50.0, // Adjust height as needed
+        child: OutlinedButton(
+          onPressed: () async {
+            // Handle Google login
+          },
+          style: ButtonStyle(
+            side: MaterialStateProperty.all<BorderSide>(const BorderSide(color: Color(0xFF618264))),
+            shape: MaterialStateProperty.all<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0))),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Image.asset(
+                'images/google.png', // Replace with the path to your Google logo image
+                height: 24,
+                width: 24,
+              ),
+              const SizedBox(width: 40,),
+              const Text(
+                "Sign in with Google",
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+
     //Sign up button for new users
     final signUpButton = Padding(
       key: const Key('signUpButton'),
@@ -129,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text("Don't have an account? ", style: TextStyle(color: Color.fromARGB(255, 42, 46, 52))),
+          const Text("Don't have an account? ", style: TextStyle(color: Color(0xFF618264))),
           TextButton(
             onPressed: () async {
               Navigator.of(context).push(
@@ -138,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               );
             },
-            child: const Text("Signup here", style: TextStyle(color: Color.fromARGB(255, 42, 46, 52), fontWeight: FontWeight.bold),),
+            child: const Text("Signup here", style: TextStyle(color: Color(0xFF618264), fontWeight: FontWeight.bold),),
           )
         ],
       )
@@ -153,19 +187,38 @@ class _LoginPageState extends State<LoginPage> {
           shrinkWrap: true,
           padding: const EdgeInsets.only(left: 40.0, right: 40.0),
           children: <Widget>[
-            const Icon(Icons.logo_dev, size: 50, color: Color.fromARGB(255, 42, 46, 52)),
+            Image.asset('images/login_logo.png'),
             const SizedBox(height: 10),
             const Text(
-              "T I T L E",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, color: Color.fromARGB(255, 42, 46, 52)),
+              " Welcome back!",
+              textAlign: TextAlign.left,
+              style: TextStyle(fontSize: 32, color: Colors.black),
             ),
             const SizedBox(height: 20),
             email,
             const SizedBox(height: 10),
             password,
             loginButton,
-            signUpButton
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Divider(), 
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text("Or continue with"),
+                ),
+                Expanded(
+                  child: Divider(), 
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            googleLogin,
+            signUpButton,
+            const SizedBox(height: 15),
           ],
         ),
         )
