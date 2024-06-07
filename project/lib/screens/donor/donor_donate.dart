@@ -7,7 +7,7 @@ import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:project/models/user_model.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+// import 'package:qr_flutter/qr_flutter.dart';
 
 
 class Constants {
