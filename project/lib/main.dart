@@ -3,12 +3,12 @@ import 'package:project/providers/donation_provider.dart';
 import 'package:project/providers/user_provider.dart';
 import 'package:project/screens/landingpage.dart';
 import 'package:project/screens/signup.dart';
-import 'package:project/screens/splashscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import './providers/auth_provider.dart';
 import './screens/login.dart';
+import 'providers/drive_provider.dart';
 import 'screens/donor/donor_homepage.dart';
 import 'screens/org/org_homepage.dart';
 import './screens/admin_homepage.dart';
@@ -26,6 +26,7 @@ void main() async {
         ChangeNotifierProvider(create: ((context) => MyAuthProvider())),
         ChangeNotifierProvider(create: ((context) => UsersProvider())),
         ChangeNotifierProvider(create: ((context) => DonationsProvider())),
+        ChangeNotifierProvider(create: ((context) => DriveProvider()))
       ],
       child: const MyApp(),
     ),

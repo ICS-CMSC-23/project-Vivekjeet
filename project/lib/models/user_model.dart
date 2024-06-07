@@ -12,6 +12,7 @@ class UserModel {
   String? description;
   List<String>? proofs;
   bool? isOpen;
+  String? profilePicture;
 
   UserModel({
     this.id,
@@ -24,7 +25,8 @@ class UserModel {
     this.organizationName,
     this.description,
     this.proofs,
-    this.isOpen
+    this.isOpen,
+    this.profilePicture
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -38,7 +40,9 @@ class UserModel {
       organizationName: json['organizationName'],
       description: json['description'],
       proofs: json['proofs'] != null ? List<String>.from(json['proofs']) : null,
-      isOpen: json['isOpen']
+      isOpen: json['isOpen'],
+      profilePicture: json['profilePicture']
+      
     );
   }
 
@@ -58,7 +62,8 @@ class UserModel {
       'organizationName': organizationName,
       'description': description,
       'proofs': proofs,
-      'isOpen': isOpen
+      'isOpen': isOpen,
+      'profilePicture': profilePicture
     };
   }
 }

@@ -1,4 +1,6 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:project/models/drive_model.dart';
@@ -33,8 +35,8 @@ class DriveProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addDrive(DriveModel drive) async {
-    String message = await firebaseService.addDrive(drive.toJson(drive));
+  Future<void> addDrive(DriveModel drive, List<File> photos) async {
+    String message = await firebaseService.addDrive(drive.toJson(drive), photos);
     notifyListeners(); 
     print(message);
   }
