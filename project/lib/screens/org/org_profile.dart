@@ -215,7 +215,9 @@ class _OrgProfileBodyState extends State<OrgProfileBody> {
                     ],
                   ),
                   const Divider(),
-                  Text('About'),
+                  Text('About',
+                    style: const TextStyle(fontSize: 16)
+                  ),
                   Text(
                     '${_orgData['description']}' ?? 'No description yet.',
                     style: const TextStyle(fontSize: 16, color: Colors.black54),
@@ -223,6 +225,24 @@ class _OrgProfileBodyState extends State<OrgProfileBody> {
                   const SizedBox(
                     height: 25,
                   ),
+                  const Text(
+                    'Addresses',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  if (_orgData.containsKey('addresses') && _orgData['addresses'] is List)
+                    ..._orgData['addresses'].map<Widget>((address) {
+                      return Text(
+                        address,
+                        style: const TextStyle(fontSize: 16, color: Colors.black54),
+                      );
+                    }).toList()
+                  else
+                    const Text(
+                      'No addresses available.',
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                    ),
+                  const SizedBox(height: 25),
                 ],
               ),
             ),
@@ -325,7 +345,35 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _contactNumberController;
   late TextEditingController _descriptionController;
 
+  List<TextEditingController> _addressControllers = [];
   File? _profileImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _userNameController = TextEditingController(text: widget.orgData['userName']);
+    _organizationNameController = TextEditingController(text: widget.orgData['organizationName']);
+    _contactNumberController = TextEditingController(text: widget.orgData['contactNumber']);
+    _descriptionController = TextEditingController(text: widget.orgData['description']);
+
+    if (widget.orgData.containsKey('addresses')) {
+      for (String address in widget.orgData['addresses']) {
+        _addressControllers.add(TextEditingController(text: address));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _userNameController.dispose();
+    _organizationNameController.dispose();
+    _contactNumberController.dispose();
+    _descriptionController.dispose();
+    for (var controller in _addressControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   Future<void> _pickImageFromGallery() async {
     final picker = ImagePicker();
@@ -355,22 +403,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _userNameController = TextEditingController(text: widget.orgData['userName']);
-    _organizationNameController = TextEditingController(text: widget.orgData['organizationName']);
-    _contactNumberController = TextEditingController(text: widget.orgData['contactNumber']);
-    _descriptionController = TextEditingController(text: widget.orgData['description']);
+  void _addAddress() {
+    setState(() {
+      _addressControllers.add(TextEditingController());
+    });
   }
 
-  @override
-  void dispose() {
-    _userNameController.dispose();
-    _organizationNameController.dispose();
-    _contactNumberController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
+  void _removeAddress(int index) {
+    setState(() {
+      _addressControllers.removeAt(index);
+    });
   }
 
   @override
@@ -390,25 +432,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 16),
             widget.orgData['profilePicture'] == null || _profileImage != null
-            ? _profileImage != null
-                ? Image.file(
-                    _profileImage!,
+                ? _profileImage != null
+                    ? Image.file(
+                        _profileImage!,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        'images/temppfp.jpg',
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                : Image.network(
+                    widget.orgData['profilePicture'],
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                  )
-                : Image.asset(
-                    'images/temppfp.jpg',
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  )
-            : Image.network(
-                widget.orgData['profilePicture'],
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+                  ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -425,7 +467,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     _pickImageFromGallery();
                   },
                 ),
-                if(_profileImage != null)
+                if (_profileImage != null)
                   IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
@@ -449,7 +491,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
               ),
               style: const TextStyle(fontSize: 16.0),
-              cursorColor: const Color(0xFF618264)
+              cursorColor: const Color(0xFF618264),
             ),
             const SizedBox(height: 20.0),
             TextFormField(
@@ -465,7 +507,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
                 contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
               ),
-              style: const TextStyle(fontSize: 16.0),            
+              style: const TextStyle(fontSize: 16.0),
             ),
             const SizedBox(height: 20.0),
             TextFormField(
@@ -505,25 +547,84 @@ class _EditProfilePageState extends State<EditProfilePage> {
               style: const TextStyle(fontSize: 16.0),
             ),
             const SizedBox(height: 20),
+            const Text(
+              'Addresses',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: _addressControllers
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                    int index = entry.key;
+                    TextEditingController controller = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: controller,
+                              decoration: const InputDecoration(
+                                labelText: 'Address',
+                                labelStyle: TextStyle(color: Color(0xFF618264)), // Label color
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFF618264)), // Border color when not focused
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFF618264), width: 2.0), // Border color when focused
+                                ),
+                                contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                              ),
+                              style: const TextStyle(fontSize: 16.0),
+                              cursorColor: const Color(0xFF618264),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              _removeAddress(index);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  })
+                  .toList(),
+            ),
+            TextButton(
+              onPressed: _addAddress,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF618264),
+              ),
+              child: const Text('Add Address'),
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final updatedData = {
                   'userName': _userNameController.text.trim(),
                   'organizationName': _organizationNameController.text.trim(),
                   'contactNumber': _contactNumberController.text.trim(),
                   'description': _descriptionController.text.trim(),
-                  'profilePicture': _profileImage ?? widget.orgData['profilePicture'], 
+                  'profilePicture': _profileImage != null ? _profileImage!.path : widget.orgData['profilePicture'],
+                  'addresses': _addressControllers.map((controller) => controller.text.trim()).toList(),
                 };
 
-                context
-                  .read<UsersProvider>()
-                  .editOrg(widget.uid, updatedData['userName'], updatedData['organizationName'], updatedData['contactNumber'], updatedData['description']);
-                
-                if(_profileImage != null){
-                  context
-                    .read<UsersProvider>()
-                    .uploadProfilePicture(widget.uid, _profileImage!);  
+                context.read<UsersProvider>().editOrg(
+                      widget.uid,
+                      updatedData['userName'],
+                      updatedData['organizationName'],
+                      updatedData['contactNumber'],
+                      updatedData['description'],
+                      updatedData['addresses'],
+                    );
+
+                if (_profileImage != null) {
+                  context.read<UsersProvider>().uploadProfilePicture(widget.uid, _profileImage!);
                 }
+
                 Navigator.pop(context, true);
               },
               style: ElevatedButton.styleFrom(

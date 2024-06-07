@@ -35,13 +35,14 @@ class FirebaseUserAPI {
     return db.collection("users").doc(userId).snapshots();
   }
   
-  Future<String> editOrg(String? id, String username, String orgname, String contact, String description) async {
+  Future<String> editOrg(String? id, String username, String orgname, String contact, String description, List<String> addresses) async {
     try {
       await db.collection('users').doc(id).update({
         'userName': username,
         'organizationName': orgname,
         'contactNumber': contact,
         'description': description,
+        'addresses': addresses
       });
       return "Successfully Edited Organization!";
     } on FirebaseException catch (e) {
