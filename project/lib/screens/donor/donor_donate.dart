@@ -9,7 +9,6 @@ import 'package:project/models/donation_model.dart';
 import 'package:project/models/user_model.dart';
 // import 'package:qr_flutter/qr_flutter.dart';
 
-
 class Constants {
   // Primary color
   static var primaryColor = const Color(0xff296e48);
@@ -191,8 +190,18 @@ class _DonorDonateState extends State<DonorDonate> {
     return TextFormField(
       controller: _textController,
       decoration: InputDecoration(
+        prefixIcon: Icon(Icons.more_horiz, color: Constants.iconColor),
+        hintText: "Others...",
+        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         labelText: 'Add new item',
-        border: OutlineInputBorder(),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
       ),
       onFieldSubmitted: (value) {
         _addItem(value);
@@ -357,10 +366,20 @@ class _DonorDonateState extends State<DonorDonate> {
   Widget _buildContactNumberField() {
     return TextFormField(
       controller: _contactController,
-      decoration: InputDecoration(
-        labelText: 'Contact Number',
-        border: OutlineInputBorder(),
+       decoration: InputDecoration(
+        hintText: "+63",
+        hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+        prefixIcon: Icon(Icons.phone, color: Constants.iconColor),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
       ),
+    
       keyboardType: TextInputType.phone,
       validator: (value) {
         if (value!.isEmpty) {
@@ -375,13 +394,20 @@ class _DonorDonateState extends State<DonorDonate> {
     return DropdownButtonFormField<String>(
       value: _selectedAddress,
       decoration: InputDecoration(
-        labelText: 'Select Address',
-        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.location_on_outlined, color: Constants.iconColor),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF618264)),
+          borderRadius: BorderRadius.circular(50),
+        ),
       ),
       items: _addresses.map((String address) {
         return DropdownMenuItem<String>(
           value: address,
-          child: Text(address),
+          child: Text(address ),
         );
       }).toList(),
       onChanged: (String? newValue) {
