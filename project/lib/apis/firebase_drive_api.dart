@@ -37,11 +37,12 @@ class FirebaseDriveAPI {
     try {
       final docRef = await db.collection("donationDrives").add(drive);
       await db.collection('donationDrives').doc(docRef.id).update({'driveId': docRef.id});
-
+      final orgRef = drive['organization'];
+      final orgId = orgRef.path.split('/').last;
       List<String> urls = [];
       for (int i = 0; i < photos.length; i++) {
         try {
-          String imagePath = "users/${docRef.id}/images/donationDrives/photo$i";
+          String imagePath = "users/$orgId/images/donationDrives/photo$i";
           TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
           String downloadUrl = await snapshot.ref.getDownloadURL();
           urls.add(downloadUrl);
