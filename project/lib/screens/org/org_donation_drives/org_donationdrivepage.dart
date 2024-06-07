@@ -5,6 +5,7 @@ import 'package:project/screens/org/org_donation_drives/add_donation_drive_page.
 import 'package:provider/provider.dart';
 
 import '../../../providers/drive_provider.dart';
+import 'donation_drive_details_page.dart';
 import 'edit_donation_drive_page.dart';
 
 class DonationDrivesPage extends StatefulWidget {
@@ -115,128 +116,145 @@ class DonationDriveCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 300,
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: NetworkImage(
-            imageUrl
-          ),
-          fit:  BoxFit.cover
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFFB0D9B1),
-            blurRadius: 15,
-            offset: Offset(0, 0),
-          )
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 100,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(153, 255, 255, 255),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xFFB0D9B1),
-                    blurRadius: 15,
-                    offset: Offset(0, 8),
-                  )
-                ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DonationDriveDetailsPage(
+              driveId: driveId,
+              driveName: driveName,
+              description: description,
+              imageUrl: imageUrl,
+              donations: donations,
+              photos: photos,
             ),
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  driveName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.outbox),
-                        Text(
-                          ': ${donations.length}'
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditDonationDrivePage(
-                                  driveId: driveId,
-                                  initialDriveName: driveName,
-                                  initialDescription: description,
-                                  initialPhotos: photos,
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.edit, size: 20,),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Confirm Delete'),
-                                  content: const Text('Are you sure you want to delete this donation drive?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: const Text('Cancel'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        context.read<DriveProvider>().deleteDrive(driveId, photos);
-                                        Navigator.of(context).pop();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF618264),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30.0),
-                                        ),
-                                      ),
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.delete, size: 20,),
-                        ),
-                      ],
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        height: 300,
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          image: DecorationImage(
+            image: NetworkImage(
+              imageUrl
+            ),
+            fit:  BoxFit.cover
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0xFFB0D9B1),
+              blurRadius: 15,
+              offset: Offset(0, 0),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 100,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(153, 255, 255, 255),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFFB0D9B1),
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
                     )
                   ],
-                )
-              ],
-            ),
-          )
-        ],
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    driveName,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.outbox),
+                          Text(
+                            ': ${donations.length}'
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditDonationDrivePage(
+                                    driveId: driveId,
+                                    initialDriveName: driveName,
+                                    initialDescription: description,
+                                    initialPhotos: photos,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit, size: 20,),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Confirm Delete'),
+                                    content: const Text('Are you sure you want to delete this donation drive?'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          context.read<DriveProvider>().deleteDrive(driveId, photos);
+                                          Navigator.of(context).pop();
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF618264),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(30.0),
+                                          ),
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.delete, size: 20,),
+                          ),
+                        ],
+                      )
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
