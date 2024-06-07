@@ -51,7 +51,7 @@ class FirebaseUserAPI {
 
   Future<String> uploadProfilePicture(String? id, File profilePicture) async {
     try{
-      String imagePath = "proofs/$id/images/profilepicture";
+      String imagePath = "users/$id/images/profilepicture";
       TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(profilePicture);
       String downloadUrl = await snapshot.ref.getDownloadURL();
       await db.collection('users').doc(id).update({'profilePicture': downloadUrl});

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 class FirebaseDriveAPI {
@@ -32,11 +33,23 @@ class FirebaseDriveAPI {
     return await db.collection('donationDrives').doc(driveId).get();
   }
 
-  Future<String> addDrive(Map<String, dynamic> drive) async {
+  Future<String> addDrive(Map<String, dynamic> drive, photos) async {
     try {
-      final docRef = await db.collection("donationDrive").add(drive);
-      await db.collection("donationDrive").doc(docRef.id).update({'donationId': docRef.id});
-      
+      final docRef = await db.collection("donationDrives").add(drive);
+      await db.collection('donationDrives').doc(docRef.id).update({'driveId': docRef.id});
+
+      List<String> urls = [];
+      for (int i = 0; i < photos.length; i++) {
+        try {
+          String imagePath = "users/${docRef.id}/images/donationDrives/photo$i";
+          TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
+          String downloadUrl = await snapshot.ref.getDownloadURL();
+          urls.add(downloadUrl);
+        } catch (e) {
+          print('Error uploading images $i: $e');
+        }
+      }
+      await db.collection('donationDrives').doc(docRef.id).update({'photos': urls});
       return "Successfully added drive!";
     } on FirebaseException catch (e) {
       return "Failed with error '${e.code}: ${e.message}";
