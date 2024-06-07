@@ -14,10 +14,14 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _loginKey = GlobalKey<FormState>();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  bool _obscureText = true;
+
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
+
 
     //Form field for the email
     final email = TextFormField(
@@ -51,8 +55,20 @@ class _LoginPageState extends State<LoginPage> {
     final password = TextFormField(
       key: const Key('pwField'),
       controller: passwordController,
-      obscureText: true,
+      obscureText: _obscureText,
       decoration: InputDecoration(
+        suffixIcon: IconButton(
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText; // Toggle obscureText value
+            });
+          },
+          icon: Icon(
+            _obscureText ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
+            size: 18,
+          ),
+      ),
         prefixIcon: const Icon(Icons.lock, color: Color(0xFF618264)),
         hintText: "Password",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
