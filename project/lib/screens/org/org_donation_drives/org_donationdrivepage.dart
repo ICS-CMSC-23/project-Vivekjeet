@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:project/screens/org/org_donation_drives/add_donation_drive_page.dart';
+import 'package:provider/provider.dart';
+
+import '../../../providers/drive_provider.dart';
+import 'edit_donation_drive_page.dart';
 
 class DonationDrivesPage extends StatefulWidget {
   const DonationDrivesPage({Key? key}) : super(key: key);
@@ -63,10 +67,12 @@ class _DonationDrivesPageState extends State<DonationDrivesPage> {
                   final organizationData = organizationSnapshot.data!.data() as Map<String, dynamic>;
       
                   return DonationDriveCard(
+                    driveId: snapshot.data!.docs[index].id,
                     driveName: driveData['driveName'],
                     description: driveData['description'],
                     imageUrl: driveData['photos'].isNotEmpty ? driveData['photos'][0] : '',
                     donations: driveData['donations'],
+                    photos: driveData['photos'].cast<String>(),
                   );
                 },
               );
@@ -74,7 +80,7 @@ class _DonationDrivesPageState extends State<DonationDrivesPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.small(
         onPressed: () {
            Navigator.push(
               context,
@@ -91,16 +97,20 @@ class _DonationDrivesPageState extends State<DonationDrivesPage> {
 }
 
 class DonationDriveCard extends StatelessWidget {
+  final String driveId;
   final String driveName;
   final String description;
   final String imageUrl;
   final List<dynamic> donations;
+  final List<String> photos;
 
   DonationDriveCard({
+    required this.driveId,
     required this.driveName,
     required this.description,
     required this.imageUrl,
     required this.donations,
+    required this.photos
   });
 
   @override
@@ -168,13 +178,54 @@ class DonationDriveCard extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: () {
-                            
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditDonationDrivePage(
+                                  driveId: driveId,
+                                  initialDriveName: driveName,
+                                  initialDescription: description,
+                                  initialPhotos: photos,
+                                ),
+                              ),
+                            );
                           },
                           icon: const Icon(Icons.edit, size: 20,),
                         ),
                         IconButton(
                           onPressed: () {
-                        
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Confirm Delete'),
+                                  content: const Text('Are you sure you want to delete this donation drive?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        context.read<DriveProvider>().deleteDrive(driveId, photos);
+                                        Navigator.of(context).pop();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF618264),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30.0),
+                                        ),
+                                      ),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                           icon: const Icon(Icons.delete, size: 20,),
                         ),

@@ -35,8 +35,8 @@ class UsersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void editOrg(String? id, String username, String orgname, String contact, String description) async {
-    String message = await firebaseService.editOrg(id, username, orgname, contact, description);
+  void editOrg(String? id, String username, String orgname, String contact, String description, List<String> addresses) async {
+    String message = await firebaseService.editOrg(id, username, orgname, contact, description, addresses);
     print(message);
     notifyListeners();
   }

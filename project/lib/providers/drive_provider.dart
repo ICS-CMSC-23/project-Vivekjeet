@@ -41,15 +41,14 @@ class DriveProvider with ChangeNotifier {
     print(message);
   }
 
-  void deleteDrive(String? driveId) async {
-    String message = await firebaseService.deleteDonation(driveId);
+  void deleteDrive(String? driveId, List<String> photos) async {
+    String message = await firebaseService.deleteDrive(driveId, photos);
     print(message);
     notifyListeners();
   }
 
-  void editDrive(String driveId, String newDriveName, String newDescription, List<String> newPhotos) async {
-    String message = await firebaseService.editDrive(driveId, newDriveName, newDescription, newPhotos);
-    print(message);
+  Future<void> updateDrive(String driveId, DriveModel newDrive, List<File> newPhotos, List<String> removedPhotos) async {
+    await firebaseService.updateDrive(driveId, newDrive, newPhotos, removedPhotos);
     notifyListeners();
   }
 }
