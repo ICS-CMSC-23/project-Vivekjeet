@@ -1,5 +1,9 @@
+
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 class FirebaseUserAPI {
@@ -30,9 +34,30 @@ class FirebaseUserAPI {
   Stream<DocumentSnapshot> getUserById(String userId) {
     return db.collection("users").doc(userId).snapshots();
   }
+  
+  Future<String> editOrg(String? id, String username, String orgname, String contact, String description) async {
+    try {
+      await db.collection('users').doc(id).update({
+        'userName': username,
+        'organizationName': orgname,
+        'contactNumber': contact,
+        'description': description,
+      });
+      return "Successfully Edited Organization!";
+    } on FirebaseException catch (e) {
+      return "Failed with error '${e.code}: ${e.message}";
+    }
+  }
 
-  // DocumentSnapshot<Map<String, dynamic>>> getUserDetails() {
-  //   return db.collection('user').doc(auth.currentUser?.uid).get();
-  // }
-
+  Future<String> uploadProfilePicture(String? id, File profilePicture) async {
+    try{
+      String imagePath = "users/$id/images/profilepicture";
+      TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(profilePicture);
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+      await db.collection('users').doc(id).update({'profilePicture': downloadUrl});
+      return "Successfully uploaded profile picture";
+    } on FirebaseException catch (e) {
+      return "Failed with error '${e.code}: ${e.message}";
+    }
+  }
 }
