@@ -84,4 +84,9 @@ class DonationsProvider with ChangeNotifier {
     _noDriveDonationsStream = firebaseService.getDonationsWithNoDrive();
     notifyListeners();
   }
+
+  Future<void> uploadProofs(String? donationId, List<File> newPhotos) async {
+    await firebaseService.uploadProofs(donationId, newPhotos);
+    notifyListeners();
+  }
 }

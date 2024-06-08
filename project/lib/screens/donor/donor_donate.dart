@@ -601,6 +601,7 @@ class _DonorDonateState extends State<DonorDonate> {
                 .map((entry) => entry.key)
                 .toList();
 
+
             List<File> photos = _photo != null ? [File(_photo!.path)] : [];
 
             DonationModel newDonation = DonationModel(
@@ -639,7 +640,8 @@ class _DonorDonateState extends State<DonorDonate> {
             });
 
             ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Donation Successful')));
+
+              .showSnackBar(SnackBar(content: Text('Donation Successful')));
           }
         },
         child: Text('Donate', style: TextStyle(color: Colors.white)),
