@@ -62,4 +62,8 @@ class FirebaseDonationAPI {
       return "Failed with error: $e";
     }
   }
+
+  Future<void> updateStatus(String? donationId, String newStatus) async {
+    await db.collection('donations').doc(donationId).update({'status': newStatus});
+  }
 }

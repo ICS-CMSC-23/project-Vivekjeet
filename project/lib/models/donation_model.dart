@@ -5,9 +5,10 @@ class DonationModel {
   String? donationId;
   DocumentReference donor;
   DocumentReference organization;
-  String category;
-  double weight;
-  String? photo;
+  List<String> categories;
+  double weightValue;
+  String weightUnit;
+  List<String>? photos;
   bool isPickup;
   List<String>? addresses;
   String? contactNumber;
@@ -19,16 +20,16 @@ class DonationModel {
     this.donationId,
     required this.donor,
     required this.organization,
-    required this.category,
-    required this.weight,
+    required this.categories,
+    required this.weightValue,
+    required this.weightUnit,
     required this.isPickup,
     this.addresses,
-    this.photo,
+    this.photos,
     this.contactNumber,
     required this.schedule,
     required this.status,
     required this.qrCode
-
   });
 
   factory DonationModel.fromJson(Map<String, dynamic> json) {
@@ -36,16 +37,16 @@ class DonationModel {
       donationId: json['donationId'],
       donor: json['donor'] as DocumentReference,
       organization: json['organization'] as DocumentReference,
-      category: json['category'],
-      weight: json['weight'].toDouble(),
-      photo: json['photo'],
+      categories: List<String>.from(json['categories']),
+      weightValue: json['weightValue'].toDouble(),
+      weightUnit: json['weightUnit'],
+      photos: List<String>.from(json['photos']),
       isPickup: json['isPickup'],
       addresses: json['addresses'] != null ? List<String>.from(json['addresses']) : null,
       contactNumber: json['contactNumber'],
       schedule: (json['schedule'] as Timestamp).toDate(),
       status: json['status'],
       qrCode: json['qrCode'],
-      
     );
   }
 
@@ -57,15 +58,16 @@ class DonationModel {
   Map<String, dynamic> toJson(DonationModel donationModel) {
     return {
       'donationId': donationId,
-      'donor': donor.path,
-      'organization': organization.path,
-      'category': category,
-      'weight': weight,
-      'photo': photo,
+      'donor': donor,
+      'organization': organization,
+      'categories': categories,
+      'weightValue': weightValue,
+      'weightUnit': weightUnit,
+      'photos': photos,
       'isPickup': isPickup,
       'addresses': addresses,
       'contactNumber': contactNumber,
-      'schedule': schedule,
+      'schedule': Timestamp.fromDate(schedule),
       'status': status,
       'qrCode': qrCode,
     };

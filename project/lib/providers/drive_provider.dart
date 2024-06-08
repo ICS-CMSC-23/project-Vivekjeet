@@ -20,9 +20,10 @@ class DriveProvider with ChangeNotifier {
   List<DocumentReference> get donationReferences => _donationsOfDrive;
   DocumentSnapshot<Object?> get selectedDrive => _selectedDriveStream;
 
-  void loadDrivesOfOrganization(String organizationId) {
+  Stream<QuerySnapshot<Object?>> loadDrivesOfOrganization(String organizationId) {
     _drivesStream = firebaseService.getDrivesOfOrganization(organizationId);
     notifyListeners();
+    return(_drivesStream);
   }
 
   Future<void> loadDonationsOfDrive(String driveId) async {
