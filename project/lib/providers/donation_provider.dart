@@ -52,10 +52,11 @@ class DonationsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addDonation(DonationModel donation, List<File>? photos) async {
-    String message = await firebaseService.addDonation(donation.toJson(donation), photos);
+  Future<String> addDonation(DonationModel donation, List<File>? photos) async {
+    String donationId = await firebaseService.addDonation(donation.toJson(donation), photos);
     notifyListeners();
-    print(message);
+    print(donationId);
+    return donationId;
   }
 
   void deleteDonation(String donationId) async {

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../apis/firebase_user_api.dart';
@@ -20,9 +21,10 @@ class UsersProvider with ChangeNotifier {
   Stream<QuerySnapshot> get organizations => _orgsStream;
   Stream<DocumentSnapshot> get userId => _uid;
 
-  void fetchOrganizationById(String orgId) {
-    _selectedOrgStream = firebaseService.getOrganizationById(orgId);
+  Future fetchOrganizationById(String orgId) async {
+    _selectedOrgStream = await firebaseService.getOrganizationById(orgId);
     notifyListeners();
+    return _selectedOrgStream;
   }
 
   void fetchOrganizations() {

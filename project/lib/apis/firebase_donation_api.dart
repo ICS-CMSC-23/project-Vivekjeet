@@ -61,16 +61,21 @@ class FirebaseDonationAPI {
 
   Future<String> addDonation(Map<String, dynamic> donation, photos) async {
     try {
+      print("Adding donation...");
       final docRef = await db.collection("donations").add(donation);
       await db.collection('donations').doc(docRef.id).update({'donationId': docRef.id});
+      print("Donation added with ID: ${docRef.id}");
       final orgRef = donation['organization'];
       final orgId = orgRef.path.split('/').last;
 
       List<String> urls = await uploadPhotos(orgId, docRef.id, photos);
       await db.collection('donations').doc(docRef.id).update({'photos': urls});
       
-      return "Successfully added donation!";
+      print('Donation added successfully!');
+      
+      return docRef.id;
     } on FirebaseException catch (e) {
+
       return "Failed with error '${e.code}: ${e.message}";
     }
   }
