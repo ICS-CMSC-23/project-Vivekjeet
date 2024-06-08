@@ -1,4 +1,3 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +22,7 @@ class DriveProvider with ChangeNotifier {
   Stream<QuerySnapshot<Object?>> loadDrivesOfOrganization(String organizationId) {
     _drivesStream = firebaseService.getDrivesOfOrganization(organizationId);
     notifyListeners();
-    return(_drivesStream);
+    return _drivesStream;
   }
 
   Future<void> loadDonationsOfDrive(String driveId) async {
@@ -31,9 +30,10 @@ class DriveProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchDriveById(String driveId) async {
+  Future<DocumentSnapshot> fetchDriveById(String driveId) async {
     _selectedDriveStream = await firebaseService.getDriveById(driveId);
     notifyListeners();
+    return _selectedDriveStream;
   }
 
   Future<void> addDrive(DriveModel drive, List<File> photos) async {
@@ -52,4 +52,9 @@ class DriveProvider with ChangeNotifier {
     await firebaseService.updateDrive(driveId, newDrive, newPhotos, removedPhotos);
     notifyListeners();
   }
+
+  Future<void> removeDonationFromDrive(String driveId, String donationId) async {
+    await firebaseService.removeDonationFromDrive(driveId, donationId);
+  }
+
 }

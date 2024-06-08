@@ -74,6 +74,7 @@ class _DonationDrivesPageState extends State<DonationDrivesPage> {
                     imageUrl: driveData['photos'].isNotEmpty ? driveData['photos'][0] : '',
                     donations: driveData['donations'],
                     photos: driveData['photos'].cast<String>(),
+                    snapshot: snapshot.data!.docs[index],
                   );
                 },
               );
@@ -98,6 +99,7 @@ class _DonationDrivesPageState extends State<DonationDrivesPage> {
 }
 
 class DonationDriveCard extends StatelessWidget {
+  final QueryDocumentSnapshot snapshot;
   final String driveId;
   final String driveName;
   final String description;
@@ -106,6 +108,7 @@ class DonationDriveCard extends StatelessWidget {
   final List<String> photos;
 
   DonationDriveCard({
+    required this.snapshot,
     required this.driveId,
     required this.driveName,
     required this.description,
@@ -128,6 +131,7 @@ class DonationDriveCard extends StatelessWidget {
               imageUrl: imageUrl,
               donations: donations,
               photos: photos,
+              drive: snapshot,
             ),
           ),
         );

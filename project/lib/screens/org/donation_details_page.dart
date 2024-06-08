@@ -94,8 +94,10 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
             _buildDetailRow('Weight:', '${widget.donation.weightValue} ${widget.donation.weightUnit}'),
             _buildDetailRow('Mode:', widget.donation.isPickup ? 'Pickup' : 'Dropoff'),
             _buildDetailRow('Schedule:', widget.donation.schedule.toString()),
-            _buildDetailRow('Contact Number:', widget.donation.contactNumber ?? 'N/A'),
-            _buildDetailRow('Addresses:', widget.donation.addresses?.join(', ') ?? 'N/A'),
+            if (widget.donation.isPickup) ...[
+              _buildDetailRow('Contact Number:', widget.donation.contactNumber ?? 'N/A'),
+              _buildDetailRow('Addresses:', widget.donation.addresses?.join(', ') ?? 'N/A'),
+            ],
             const SizedBox(height: 16),
             _buildSectionTitle('Status'),
             DropdownButton<String>(

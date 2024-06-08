@@ -127,4 +127,17 @@ class FirebaseDriveAPI {
       return "Failed with error: $e";
     }
   }
+
+  Future<void> removeDonationFromDrive(String driveId, String donationId) async {
+    try {
+      String path = "donations/$donationId";
+      DocumentReference pathref = db.doc(path);
+      await db.collection('donationDrives').doc(driveId).update({
+        'donations': FieldValue.arrayRemove([pathref]),
+      });
+    } catch (e) {
+      print('Error removing donation from drive: $e');
+    }
+  }
+
 }
