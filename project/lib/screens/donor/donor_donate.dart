@@ -1,5 +1,11 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last
 
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants.dart';
@@ -26,14 +32,14 @@ class DonorDonate extends StatefulWidget {
 class _DonorDonateState extends State<DonorDonate> {
   final _formKey = GlobalKey<FormState>();
 
-  final Map<String, Icon> _checkboxItems = {
+  final Map<String, Icon> _categoryIcons = {
     'Food': Icon(Icons.fastfood, color: Constants.iconColor),
     'Clothes': Icon(Icons.checkroom, color: Constants.iconColor),
     'Cash': Icon(Icons.attach_money, color: Constants.iconColor),
     'Necessities': Icon(Icons.shopping_cart, color: Constants.iconColor),
   };
 
-  final Map<String, bool> _checkboxValues = {
+  final Map<String, bool> _categorySelections = {
     'Food': false,
     'Clothes': false,
     'Cash': false,
@@ -44,21 +50,53 @@ class _DonorDonateState extends State<DonorDonate> {
   String _donationMethod = 'Pick up';
   bool _isPickup = true;
   String _weightUnit = 'lb';
+  File? _photo;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   TextEditingController _contactController = TextEditingController();
-  TextEditingController _weightController = TextEditingController();
 
-  List<String> _addresses = ['Address 1', 'Address 2', 'Address 3'];
-  String _selectedAddress = 'Address 1';
+  List<String> _addresses = [''];
+
+  @override
+  void initState() {
+    super.initState();
+    if (_addresses.isEmpty) {
+      _addresses.add('');
+    }
+  }
+
+  void addAddressField() {
+    setState(() {
+      _addresses.add('');
+    });
+  }
+
+  void removeAddressField(int index) {
+    if (index > 0) {
+      setState(() {
+        _addresses.removeAt(index);
+      });
+    }
+  }
+
   final TextEditingController _textController = TextEditingController();
+
+  Future<void> _pickImageFromCamera() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        _photo = File(image.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Constants.iconColor,
-        title: const Text('Donor Donate',
+        title: const Text('Donate',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -70,18 +108,15 @@ class _DonorDonateState extends State<DonorDonate> {
           key: _formKey,
           child: ListView(
             children: [
-              SizedBox(height: 20),
-              Center(
-                child: Text(
-                  'What would you like to donate?',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Constants.primaryColor),
-                ),
+              Text(
+                'Category',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Constants.primaryColor),
               ),
               SizedBox(height: 10),
-              ..._buildCheckboxes(),
+              ..._buildCategoryCheckboxes(),
               SizedBox(height: 20),
               _buildAdditionalItemsInput(),
               _buildAddItemButton(),
@@ -107,30 +142,17 @@ class _DonorDonateState extends State<DonorDonate> {
               Text(
                 'Donation Method',
                 style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Constants.primaryColor),
               ),
               SizedBox(height: 10),
               _buildDonationMethod(),
-              SizedBox(height: 30),
-              Text(
-                _donationMethod == 'Pick up'
-                    ? 'Choose Pick up Date and Time'
-                    : 'Choose Drop off Date and Time',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
-              ),
-              SizedBox(height: 10),
-              _buildDatePicker(context),
-              _buildTimePicker(context),
               SizedBox(height: 10),
               Text(
-                'Weight of Donations',
+                'Weight',
                 style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Constants.primaryColor),
               ),
@@ -138,6 +160,20 @@ class _DonorDonateState extends State<DonorDonate> {
               _buildWeightUnit(),
               _buildWeightField(),
               SizedBox(height: 10),
+              _buildPhotoField(),
+              SizedBox(height: 10),
+              Text(
+                _donationMethod == 'Pick up'
+                    ? 'Pick up Date and Time'
+                    : 'Drop off Date and Time',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Constants.primaryColor),
+              ),
+              SizedBox(height: 10),
+              _buildDatePicker(context),
+              _buildTimePicker(context),
               Divider(
                 color: Constants.blackColor.withOpacity(
                     0.45), // Change the color to your desired divider color
@@ -158,11 +194,13 @@ class _DonorDonateState extends State<DonorDonate> {
                     SizedBox(height: 10),
                     _buildContactNumberField(),
                     SizedBox(height: 10),
-                    _buildAddressDropdown(),
+                    _buildAddressFields(),
+                    SizedBox(height: 10),
+                    _addAddressButton(),
                   ]),
                   visible: _isPickup),
               SizedBox(height: 30),
-              _buildButtons(context),
+              _buildDonateButton(context),
             ],
           ),
         ),
@@ -170,16 +208,16 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  List<Widget> _buildCheckboxes() {
-    return _checkboxItems.entries.map((entry) {
+  List<Widget> _buildCategoryCheckboxes() {
+    return _categoryIcons.entries.map((entry) {
       return CheckboxListTile(
         controlAffinity: ListTileControlAffinity.leading,
         secondary: entry.value,
         title: Text(entry.key),
-        value: _checkboxValues[entry.key],
+        value: _categorySelections[entry.key],
         onChanged: (bool? value) {
           setState(() {
-            _checkboxValues[entry.key] = value!;
+            _categorySelections[entry.key] = value!;
           });
         },
       );
@@ -211,10 +249,10 @@ class _DonorDonateState extends State<DonorDonate> {
 
   void _addItem(String value) {
     setState(() {
-      if (!_checkboxItems.containsKey(value)) {
-        _checkboxItems[value] =
+      if (!_categoryIcons.containsKey(value)) {
+        _categoryIcons[value] =
             Icon(Icons.more_horiz, color: Constants.iconColor);
-        _checkboxValues[value] = false;
+        _categorySelections[value] = false;
         _additionalItems.add(value);
         _textController.clear();
       }
@@ -222,16 +260,26 @@ class _DonorDonateState extends State<DonorDonate> {
   }
 
   Widget _buildAddItemButton() {
-    return ElevatedButton(
-      onPressed: () {
-        if (_textController.text.isNotEmpty) {
-          _addItem(_textController.text);
-        }
-      },
-      child: Text('Add Item', style: TextStyle(color: Colors.white)),
-      style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+    return Center( 
+      child: ElevatedButton(
+        onPressed: () {
+          if (_textController.text.isNotEmpty) {
+            _addItem(_textController.text);
+          }
+        },
+        child: Text('Add Item', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+      ),
     );
   }
+
+  // Center( 
+  //       child: ElevatedButton(
+  //         onPressed: _pickImageFromCamera,
+  //         child: Text('Take Photo', style: TextStyle(color: Colors.white)),
+  //         style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+  //       ),
+  //     ),
 
   Widget _buildDonationMethod() {
     return DropdownButton<String>(
@@ -298,7 +346,8 @@ class _DonorDonateState extends State<DonorDonate> {
   Widget _buildWeightUnit() {
     return Row(
       children: [
-        Text('Weight unit: '),
+        Text('Unit: ',
+              style: TextStyle(fontSize: 16),),
         DropdownButton<String>(
           value: _weightUnit,
           items: ['lb', 'kg'].map((String value) {
@@ -317,50 +366,81 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  double _currentWeight = 0.0;
+  double _weightValue = 0.0;
 
   Widget _buildWeightField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Weight of Donations: ${_currentWeight.toStringAsFixed(1)} kg',
-          style: TextStyle(fontSize: 16),
-        ),
-        Slider(
-          value: _currentWeight,
-          onChanged: (newValue) {
-            setState(() {
-              _currentWeight = newValue;
-            });
-          },
-          min: 0.0,
-          max: 100.0,
-          divisions: 100,
-          label: _currentWeight.toStringAsFixed(1),
-        ),
-        if (_weightValidationMessage != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              _weightValidationMessage!,
-              style: TextStyle(color: Colors.red),
-            ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Value: ${_weightValue.toStringAsFixed(1)} $_weightUnit',
+        style: TextStyle(fontSize: 16),
+      ),
+      Slider(
+        value: _weightValue,
+        onChanged: (newValue) {
+          setState(() {
+            _weightValue = newValue;
+          });
+        },
+        min: 0.0,
+        max: 100.0,
+        divisions: 100,
+        label: '${_weightValue.toStringAsFixed(1)} $_weightUnit',
+      ),
+      if (_weightValidationMessage != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            _weightValidationMessage!,
+            style: TextStyle(color: Colors.red),
           ),
-      ],
-    );
-  }
+        ),
+    ],
+  );
+}
 
   String? _weightValidationMessage;
 
   void _validateWeight() {
     setState(() {
-      if (_currentWeight <= 0.0) {
+      if (_weightValue <= 0.0) {
         _weightValidationMessage = 'Please enter a weight greater than zero';
       } else {
         _weightValidationMessage = null;
       }
     });
+  }
+
+  Widget _buildPhotoField() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          'Photo',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Constants.primaryColor),
+        ),
+      ),
+      _photo != null
+          ? Image.file(_photo!)
+          : Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.grey[300],
+              child: Icon(Icons.camera_alt, color: Colors.white70, size: 50),
+            ),
+      Center( 
+        child: ElevatedButton(
+          onPressed: _pickImageFromCamera,
+          child: Text('Take Photo', style: TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
   }
 
   Widget _buildContactNumberField() {
@@ -379,7 +459,6 @@ class _DonorDonateState extends State<DonorDonate> {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-    
       keyboardType: TextInputType.phone,
       validator: (value) {
         if (value!.isEmpty) {
@@ -390,96 +469,96 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  Widget _buildAddressDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedAddress,
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.location_on_outlined, color: Constants.iconColor),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xFF618264)),
-          borderRadius: BorderRadius.circular(50),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xFF618264)),
-          borderRadius: BorderRadius.circular(50),
-        ),
-      ),
-      items: _addresses.map((String address) {
-        return DropdownMenuItem<String>(
-          value: address,
-          child: Text(address ),
+  Widget _buildAddressFields() {
+    return Column(
+      children: List.generate(_addresses.length, (index) {
+        return Padding(
+          padding: EdgeInsets.only(top: index > 0 ? 10 : 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  initialValue: _addresses[index],
+                  onChanged: (val) {
+                    _addresses[index] = val;
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.home, color: Constants.iconColor),
+                    hintText: "Address ${index + 1}",
+                    hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF618264)),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF618264)),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                ),
+              ),
+              if (index > 0)
+                IconButton(
+                  icon: Icon(Icons.remove_circle_outline, color: Colors.red),
+                  onPressed: () => removeAddressField(index),
+                ),
+            ],
+          ),
         );
-      }).toList(),
-      onChanged: (String? newValue) {
-        setState(() {
-          _selectedAddress = newValue!;
-        });
-      },
-      validator: (value) {
-        if (value == null) {
-          return 'Please select an address';
-        }
-        return null;
-      },
+      }),
     );
   }
 
-  Widget _buildButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              //ADD DONATION TO DATABASE
-              // Create an instance of DonationModel
-              // DonationModel newDonation = DonationModel(
-              //   donor: donorReference, // Assuming you have the donor reference
-              //   organization:
-              //       organizationReference, // Assuming you have the organization reference
-              //   category: 'Clothing', // Example category
-              //   weight: 5.0, // Example weight
-              //   isPickup: true, // Example isPickup value
-              //   schedule: DateTime.now(), // Example schedule
-              //   status: 'Pending', // Example status
-              //   qrCode: '12345', // Example qrCode
-              //   // Add other necessary data
-              // );
+  Widget _addAddressButton() {
+    return ElevatedButton(
+      onPressed: addAddressField,
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Constants.primaryColor),
+      ),
+      child: Text('Add Address', style: TextStyle(color: Colors.white)),
+    );
+  }
 
-              // // Call the addDonation method from your provider
-              // DonationsProvider().addDonation(newDonation);
+  Widget _buildDonateButton(BuildContext context) {
+    return Center(
+        child: ElevatedButton(
+          onPressed: () {
+            final UserModel selectedOrganization = ModalRoute.of(context)!.settings.arguments as UserModel;
+            DocumentReference donorRef = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid);
+            DocumentReference orgRef = FirebaseFirestore.instance.collection('users').doc(selectedOrganization.id);
+
+            if (_formKey.currentState!.validate()) {
+              List<String> selectedCategories = _categorySelections.entries
+                .where((entry) => entry.value)
+                .map((entry) => entry.key)
+                .toList();
+
+              List<File> photos = _photo != null ? [File(_photo!.path)] : [];
+
+              DonationModel newDonation = DonationModel(
+                donor: donorRef,
+                organization: orgRef,
+                categories: selectedCategories,
+                weightValue: _weightValue,
+                weightUnit: _weightUnit,
+                isPickup: _isPickup,
+                schedule: _selectedDate,
+                status: 'Pending',
+                qrCode: 'Sample QR Code',
+                photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null, 
+                addresses: _addresses.isNotEmpty ? _addresses : null,  
+                contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null, 
+              );
+
+              Provider.of<DonationsProvider>(context, listen: false).addDonation(newDonation, photos);
 
               ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text('Donation Successful')));
+                .showSnackBar(SnackBar(content: Text('Donation Successful')));
             }
           },
           child: Text('Donate', style: TextStyle(color: Colors.white)),
-          style:
-              ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+          style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
         ),
-        ElevatedButton(
-          onPressed: () {
-            _formKey.currentState!.reset();
-            _contactController.clear();
-            _weightController.clear();
-            setState(() {
-              _checkboxValues.updateAll((key, value) => false);
-              _additionalItems.clear();
-              _donationMethod = 'Pick up';
-              _weightUnit = 'lb';
-              _selectedDate = DateTime.now();
-              _selectedTime = TimeOfDay.now();
-              _selectedAddress = _addresses[0];
-            });
-            //show snackbar
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text('Form Cleared')));
-          },
-          child: const Text('Cancel', style: TextStyle(color: Colors.white)),
-          style:
-              ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
-        ),
-      ],
     );
   }
 }
