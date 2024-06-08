@@ -14,10 +14,10 @@ class _DonorDetailsState extends State<DonorDetails> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    UserModel? user = ModalRoute.of(context)!.settings.arguments as UserModel?;
+    UserModel? selectedOrganization = ModalRoute.of(context)!.settings.arguments as UserModel?;
 
     return Scaffold(
-        body: Center(
+      body: Center(
       child: Stack(alignment: Alignment.center, children: [
         //x button
         Positioned(
@@ -76,7 +76,7 @@ class _DonorDetailsState extends State<DonorDetails> {
                       children: [
                         Expanded(
                           child: Text(
-                            user!.organizationName ?? 'No organization name',
+                            selectedOrganization!.organizationName ?? 'No organization name',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class _DonorDetailsState extends State<DonorDetails> {
                     SizedBox(
                       height: size.height * 0.30,
                       child: Text(
-                        user.description ?? 'No organization description.',
+                        selectedOrganization.description ?? 'No organization description.',
                         style: TextStyle(
                           fontSize: 18,
                           color: Constants.blackColor.withOpacity(.6),
@@ -102,7 +102,7 @@ class _DonorDetailsState extends State<DonorDetails> {
                     //Donate Button
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/donor_donate', arguments: user);
+                        Navigator.pushNamed(context, '/donor_donate', arguments: selectedOrganization);
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 70),
@@ -119,7 +119,7 @@ class _DonorDetailsState extends State<DonorDetails> {
                             ]),
                         child: const Center(
                           child: Text(
-                            'DONATE NOW',
+                            'Donate Now!',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseDonationAPI {
   static final FirebaseFirestore db = FirebaseFirestore.instance;
   static final FirebaseAuth auth = FirebaseAuth.instance;
+  static final FirebaseStorage storage = FirebaseStorage.instance;
   User? user = auth.currentUser;
 
   Future<DocumentSnapshot> getDonationById(String donationId) async {
@@ -33,10 +37,30 @@ class FirebaseDonationAPI {
         .snapshots();
   }
 
-  Future<String> addDonation(Map<String, dynamic> donation) async {
+  Future<List<String>> uploadPhotos(String orgId, String donationId, List<File> photos) async {
+    List<String> urls = [];
+    for (int i = 0; i < photos.length; i++) {
+      try {
+        String imagePath = "users/$orgId/images/donations/$donationId/photo$i";
+        TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        urls.add(downloadUrl);
+      } catch (e) {
+        print('Error uploading images $i: $e');
+      }
+    }
+    return urls;
+  }
+
+  Future<String> addDonation(Map<String, dynamic> donation, photos) async {
     try {
       final docRef = await db.collection("donations").add(donation);
-      await db.collection("donations").doc(docRef.id).update({'donationId': docRef.id});
+      await db.collection('donations').doc(docRef.id).update({'donationId': docRef.id});
+      final orgRef = donation['organization'];
+      final orgId = orgRef.path.split('/').last;
+
+      List<String> urls = await uploadPhotos(orgId, docRef.id, photos);
+      await db.collection('donations').doc(docRef.id).update({'photos': urls});
       
       return "Successfully added donation!";
     } on FirebaseException catch (e) {

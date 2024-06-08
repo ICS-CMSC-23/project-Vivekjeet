@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../apis/firebase_donation_api.dart';
@@ -40,9 +42,9 @@ class DonationsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addDonation(DonationModel donation) async {
-    String message = await firebaseService.addDonation(donation.toJson(donation));
-    notifyListeners(); 
+  Future<void> addDonation(DonationModel donation, List<File>? photos) async {
+    String message = await firebaseService.addDonation(donation.toJson(donation), photos);
+    notifyListeners();
     print(message);
   }
 

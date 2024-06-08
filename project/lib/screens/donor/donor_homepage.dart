@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../providers/auth_provider.dart';
-import '../login.dart';
 import 'donor_orglist.dart';
 import 'donor_profile.dart';
 import '../constants.dart';
@@ -88,7 +87,7 @@ class _DonorHomepageState extends State<DonorHomepage> {
         onTabChange: _onTabChange,
         tabs: const [
           GButton(icon: Icons.home, text: 'Home'),
-          GButton(icon: Icons.drive_eta, text: 'Drives'),
+          GButton(icon: Icons.volunteer_activism, text: 'Donations'),
           GButton(icon: Icons.person, text: 'Profile'),
         ],
       ),

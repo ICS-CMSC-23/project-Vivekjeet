@@ -125,7 +125,7 @@ class _DonationsPageState extends State<DonationsPage> {
           itemBuilder: ((context, index) {
             DonationModel donation = DonationModel.fromJson(snapshot.data?.docs[index].data() as Map<String, dynamic>);
             return Container(
-              child: Text(donation.category)
+              // child: Text(donation.category)
                
             );
           
