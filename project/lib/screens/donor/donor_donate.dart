@@ -707,6 +707,7 @@ class _DonorDonateState extends State<DonorDonate> {
                 .toList();
 
             List<File> photos = _photo != null ? [File(_photo!.path)] : [];
+            List<String> temp = [];
 
             DonationModel newDonation = DonationModel(
               donor: donorRef,
@@ -726,7 +727,7 @@ class _DonorDonateState extends State<DonorDonate> {
                   ? _contactController.text
                   : null,
               donationDrive: null,
-              proofs: null,
+              proofs: temp,
             );
 
             Provider.of<DonationsProvider>(context, listen: false)
