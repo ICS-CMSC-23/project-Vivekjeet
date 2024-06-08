@@ -22,6 +22,13 @@ class FirebaseDonationAPI {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> getDonationsByDonor(String donorId) {
+    return db
+        .collection('donations')
+        .where('donor', isEqualTo: db.doc('users/$donorId'))
+        .snapshots();
+  }
+
   Stream<QuerySnapshot> getDonationsByDonorToOrganization(String donorId, String orgId) {
     return db
         .collection('donations')

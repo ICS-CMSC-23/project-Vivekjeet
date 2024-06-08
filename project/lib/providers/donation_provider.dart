@@ -9,6 +9,7 @@ class DonationsProvider with ChangeNotifier {
   late FirebaseDonationAPI firebaseService;
   late DocumentSnapshot _selectedDonationStream;
   late Stream<QuerySnapshot> _donationsStream;
+  late Stream<QuerySnapshot> _donorDonationsStream;
   late Stream<QuerySnapshot> _organizationDonationsStream;
   late Stream<QuerySnapshot> _donorOrganizationDonationsStream;
 
@@ -19,6 +20,7 @@ class DonationsProvider with ChangeNotifier {
 
   DocumentSnapshot<Object?> get selectedDonation => _selectedDonationStream;
   Stream<QuerySnapshot> get donations => _donationsStream;
+  Stream<QuerySnapshot> get donorDonations => _donorDonationsStream;
   Stream<QuerySnapshot> get organizationDonations => _organizationDonationsStream;
   Stream<QuerySnapshot> get donorOrganizationDonations => _donorOrganizationDonationsStream;
 
@@ -29,6 +31,11 @@ class DonationsProvider with ChangeNotifier {
 
   void fetchDonations() {
     _donationsStream = firebaseService.getDonations();
+    notifyListeners();
+  }
+
+  void fetchDonationsByDonor(String donorId) {
+    _donorDonationsStream = firebaseService.getDonationsByDonor(donorId);
     notifyListeners();
   }
 
