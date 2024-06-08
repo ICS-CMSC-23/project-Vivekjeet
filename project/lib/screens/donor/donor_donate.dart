@@ -346,37 +346,6 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  // Center(
-  //       child: ElevatedButton(
-  //         onPressed: _pickImageFromCamera,
-  //         child: Text('Take Photo', style: TextStyle(color: Colors.white)),
-  //         style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
-  //       ),
-  //     ),
-
-  // Widget _buildDonationMethod() {
-  //   return DropdownButton<String>(
-  //     value: _donationMethod,
-  //     onChanged: (String? newValue) {
-  //       setState(() {
-  //         _donationMethod = newValue!;
-  //         if (_donationMethod == 'Pick up') {
-  //           _isPickup = true;
-  //           showQr = false;
-  //         } else {
-  //           _isPickup = false;
-  //         }
-  //       });
-  //     },
-  //     items: <String>['Pick up', 'Drop off'].map((String value) {
-  //       return DropdownMenuItem<String>(
-  //         value: value,
-  //         child: Text(value),
-  //       );
-  //     }).toList(),
-  //   );
-  // }
-
   Widget _buildDonationMethod() {
     return ToggleButtons(
       borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -451,30 +420,6 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  // Widget _buildWeightUnit() {
-  //   return Row(
-  //     children: [
-  //       Text(
-  //         'Unit: ',
-  //         style: TextStyle(fontSize: 16),
-  //       ),
-  //       DropdownButton<String>(
-  //         value: _weightUnit,
-  //         items: ['lb', 'kg'].map((String value) {
-  //           return DropdownMenuItem<String>(
-  //             value: value,
-  //             child: Text(value),
-  //           );
-  //         }).toList(),
-  //         onChanged: (String? newValue) {
-  //           setState(() {
-  //             _weightUnit = newValue!;
-  //           });
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildWeightUnit() {
     return Row(
@@ -688,71 +633,97 @@ class _DonorDonateState extends State<DonorDonate> {
   }
 
   Widget _buildDonateButton(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          final UserModel selectedOrganization =
-              ModalRoute.of(context)!.settings.arguments as UserModel;
-          DocumentReference donorRef = FirebaseFirestore.instance
-              .collection('users')
-              .doc(FirebaseAuth.instance.currentUser?.uid);
-          DocumentReference orgRef = FirebaseFirestore.instance
-              .collection('users')
-              .doc(selectedOrganization.id);
+  return Center(
+    child: ElevatedButton(
+      onPressed: () async {
+        // Ensure that the selected organization is passed as an argument
+        final UserModel? selectedOrganization =
+            ModalRoute.of(context)?.settings.arguments as UserModel?;
 
-          if (_formKey.currentState!.validate()) {
-            List<String> selectedCategories = _categorySelections.entries
-                .where((entry) => entry.value)
-                .map((entry) => entry.key)
-                .toList();
+        if (selectedOrganization == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No organization selected')));
+          return;
+        }
 
-            List<File> photos = _photo != null ? [File(_photo!.path)] : [];
+        DocumentReference donorRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser?.uid);
+        DocumentReference orgRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(selectedOrganization.id);
 
-            DonationModel newDonation = DonationModel(
-              donor: donorRef,
-              organization: orgRef,
-              categories: selectedCategories,
-              weightValue: _weightValue,
-              weightUnit: _weightUnit,
-              isPickup: _isPickup,
-              schedule: _selectedDate,
-              status: 'Pending',
-              qrCode: ' ',
-              photos: photos.isNotEmpty
-                  ? photos.map((file) => file.path).toList()
-                  : null,
-              addresses: _addresses.isNotEmpty ? _addresses : null,
-              contactNumber: _contactController.text.isNotEmpty
-                  ? _contactController.text
-                  : null,
-              donationDrive: null,
-              proofs: null,
-            );
+        if (_formKey.currentState!.validate()) {
+          List<String> selectedCategories = _categorySelections.entries
+              .where((entry) => entry.value)
+              .map((entry) => entry.key)
+              .toList();
 
-            Provider.of<DonationsProvider>(context, listen: false)
-                .addDonation(newDonation, photos)
-                .then((donationId) {
-              // Once the donation is added successfully, get the Firebase generated ID
+          List<File> photos = _photo != null ? [File(_photo!.path)] : [];
 
-              // Now you can use the donationId to create your QR code
-              // Set _qrCodeData to donationId or use it directly to generate the QR code
-              setState(() {
-                _qrCodeData = donationId;
-                if (_isPickup == false) {
-                  showQr = true;
-                }
-                // Create the QR code using _qrCodeData
-              });
+          if (selectedCategories.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please select at least one category')));
+            return;
+          }
+
+          if (_weightValue == null || _weightValue <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please enter a valid weight value')));
+            return;
+          }
+
+          if (_selectedDate == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please select a schedule date')));
+            return;
+          }
+
+          DonationModel newDonation = DonationModel(
+            donor: donorRef,
+            organization: orgRef,
+            categories: selectedCategories,
+            weightValue: _weightValue,
+            weightUnit: _weightUnit,
+            isPickup: _isPickup,
+            schedule: _selectedDate,
+            status: 'Pending',
+            qrCode: ' ',
+            photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null,
+            addresses: _addresses.isNotEmpty ? _addresses : null,
+            contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
+            donationDrive: null,
+            proofs: null,
+          );
+
+          try {
+            String donationId = await Provider.of<DonationsProvider>(context, listen: false)
+                .addDonation(newDonation, photos);
+
+            setState(() {
+              _qrCodeData = donationId;
+              if (!_isPickup) {
+                showQr = true;
+              }
             });
 
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Donation Successful')));
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Donation Successful')));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to add donation: $e')));
           }
-        },
-        child: Text('Donate', style: TextStyle(color: Colors.white)),
-        style:
-            ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
-      ),
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please complete the form')));
+        }
+      },
+      child: Text('Donate', style: TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+    ),
+  
+
+
     );
   }
 }
