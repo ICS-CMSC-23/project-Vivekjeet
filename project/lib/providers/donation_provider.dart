@@ -12,10 +12,12 @@ class DonationsProvider with ChangeNotifier {
   late Stream<QuerySnapshot> _donorDonationsStream;
   late Stream<QuerySnapshot> _organizationDonationsStream;
   late Stream<QuerySnapshot> _donorOrganizationDonationsStream;
+  late Stream<QuerySnapshot> _noDriveDonationsStream;
 
   DonationsProvider() {
     firebaseService = FirebaseDonationAPI();
     _donationsStream = firebaseService.getDonations();
+    fetchDonationsWithNoDrive();
   }
 
   DocumentSnapshot<Object?> get selectedDonation => _selectedDonationStream;
@@ -23,6 +25,7 @@ class DonationsProvider with ChangeNotifier {
   Stream<QuerySnapshot> get donorDonations => _donorDonationsStream;
   Stream<QuerySnapshot> get organizationDonations => _organizationDonationsStream;
   Stream<QuerySnapshot> get donorOrganizationDonations => _donorOrganizationDonationsStream;
+  Stream<QuerySnapshot> get donationsWithNoDrives => _noDriveDonationsStream;
 
   void fetchDonationById(String donationId) async {
     _selectedDonationStream = await firebaseService.getDonationById(donationId);
@@ -63,6 +66,21 @@ class DonationsProvider with ChangeNotifier {
 
   Future<void> updateStatus(String? donationId, String newStatus) async {
     await firebaseService.updateStatus(donationId, newStatus);
+    notifyListeners();
+  }
+
+  Future<void> removeDrive(String? donationId) async {
+    await firebaseService.removeDrive(donationId);
+    notifyListeners();
+  }
+
+  Future<void> addDrive(String? donationId, String driveId) async {
+    await firebaseService.addDrive(donationId, driveId);
+    notifyListeners();
+  }
+
+  void fetchDonationsWithNoDrive(){
+    _noDriveDonationsStream = firebaseService.getDonationsWithNoDrive();
     notifyListeners();
   }
 }

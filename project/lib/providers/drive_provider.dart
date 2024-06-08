@@ -57,4 +57,7 @@ class DriveProvider with ChangeNotifier {
     await firebaseService.removeDonationFromDrive(driveId, donationId);
   }
 
+  Future<void> addDonationToDrive(String driveId, String donationId) async {
+    await firebaseService.addDonationToDrive(driveId, donationId);
+  }
 }

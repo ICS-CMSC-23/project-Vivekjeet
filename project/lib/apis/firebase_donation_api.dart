@@ -97,4 +97,24 @@ class FirebaseDonationAPI {
   Future<void> updateStatus(String? donationId, String newStatus) async {
     await db.collection('donations').doc(donationId).update({'status': newStatus});
   }
+
+  Future<void> removeDrive(String? donationId) async {
+    await db.collection('donations').doc(donationId).update({'donationDrive': null});
+  }
+
+  Future<void> addDrive(String? donationId, String driveId) async {
+    String path = "donationDrives/$driveId";
+    DocumentReference driveRef = db.doc(path);
+
+    await db.collection('donations').doc(donationId).update({'donationDrive': driveRef});
+  }
+
+  Stream<QuerySnapshot> getDonationsWithNoDrive() {
+    DocumentReference orgRef = db.doc('users/${user!.uid}');
+    return db
+        .collection('donations')
+        .where('donationDrive', isEqualTo: null)
+        .where('organization', isEqualTo: orgRef)
+        .snapshots();
+  }
 }

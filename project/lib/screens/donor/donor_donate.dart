@@ -547,7 +547,8 @@ class _DonorDonateState extends State<DonorDonate> {
                 qrCode: 'Sample QR Code',
                 photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null, 
                 addresses: _addresses.isNotEmpty ? _addresses : null,  
-                contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null, 
+                contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
+                donationDrive: null
               );
 
               Provider.of<DonationsProvider>(context, listen: false).addDonation(newDonation, photos);
