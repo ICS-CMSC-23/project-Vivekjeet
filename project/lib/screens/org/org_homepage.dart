@@ -131,6 +131,7 @@ class _DonationsPageState extends State<DonationsPage> {
             itemBuilder: (context, index) {
               DonationModel donation = DonationModel.fromJson(
                   snapshot.data!.docs[index].data() as Map<String, dynamic>);
+
               // Fetch donor data using the donor reference
               return StreamBuilder<DocumentSnapshot>(
                 stream: (donation.donor).snapshots(),

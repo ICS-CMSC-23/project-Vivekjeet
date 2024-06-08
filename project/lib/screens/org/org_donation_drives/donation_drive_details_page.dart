@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../models/donation_model.dart';
 import '../../../providers/drive_provider.dart';
@@ -49,7 +50,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
       'donations': widget.donations,
       'photos': widget.photos,
     };
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -100,8 +101,9 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                     labelColor: const Color(0xFF618264),
                     unselectedLabelColor: Colors.black54,
                     tabs: const [
-                      Tab(text: 'Donations'),
+                      Tab(text: 'Inventory'),
                       Tab(text: 'Photos'),
+                      Tab(text: 'Donations')
                     ],
                   ),
                   // Tab Bar View
@@ -112,6 +114,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                       children: [
                         donationDetails(),
                         photosView(),
+                        otherDonations()
                       ],
                     ),
                   ),
@@ -340,6 +343,9 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
     itemCount: widget.donations.length,
     itemBuilder: (BuildContext context, int index) {
       final donationRef = widget.donations[index];
+      if(widget.donations.isEmpty){
+        return const Text('No donations yet.');
+      }
       
       return StreamBuilder<DocumentSnapshot>(
         stream: donationRef.snapshots(), // Listen for changes in the document
@@ -379,7 +385,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                     title: Text(
                       donationData['categories'].join(', '),
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -448,6 +454,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
 
                           // Remove the donation from the drive in Firestore
                           await context.read<DriveProvider>().removeDonationFromDrive(widget.driveId, donationData['donationId']);
+                          FirebaseFirestore.instance.collection('donations').doc(donationData['donationId']).update({'donationDrive': null});
                         }
                       },
                     ),
@@ -481,4 +488,131 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
       },
     );
   }
+  
+  Widget otherDonations() {
+    Stream<QuerySnapshot> donationsNoDriveStream = context.watch<DonationsProvider>().donationsWithNoDrives;
+    return StreamBuilder<QuerySnapshot>(
+      stream: donationsNoDriveStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No donations without a drive.'));
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (BuildContext context, int index) {
+            final donationDoc = snapshot.data!.docs[index];
+            final donationData = donationDoc.data() as Map<String, dynamic>;
+            DonationModel donation = DonationModel.fromJson(donationData);
+
+            return FutureBuilder<DocumentSnapshot>(
+              future: donationData['donor'].get(),
+              builder: (context, donorSnapshot) {
+                if (donorSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (donorSnapshot.hasError) {
+                  return Center(child: Text('Error: ${donorSnapshot.error}'));
+                }
+                if (!donorSnapshot.hasData || !donorSnapshot.data!.exists) {
+                  return const Center(child: Text('Donor not found.'));
+                }
+
+                final donorData = donorSnapshot.data!.data() as Map<String, dynamic>;
+
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        donationData['categories'].join(', '),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Donor: ${donorData['userName']}'),
+                          Text('Status: ${donationData['status']}'),
+                          Text('Pickup: ${donationData['isPickup'] ? 'Yes' : 'No'}'),
+                          Text('Weight: ${donationData['weightValue']} ${donationData['weightUnit']}'),
+                          if (donationData['addresses'] != null && donationData['addresses'].isNotEmpty)
+                            Text('Addresses: ${donationData['addresses'].join(', ')}'),
+                          if (donationData['contactNumber'] != null)
+                            Text('Contact Number: ${donationData['contactNumber']}'),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DonationDetailsPage(
+                              donation: donation,
+                              donorData: donorData,
+                            ),
+                          ),
+                        );
+                      },
+                      trailing: IconButton(
+                        icon: const Icon(Icons.add, color: Colors.green,),
+                        onPressed: () async {
+                          // Show confirmation dialog
+                          bool confirm = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Confirm Addition'),
+                                content: const Text('Add this donation to the drive?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(false); // Return false if user cancels
+                                    },
+                                    child: const Text('Cancel', style: TextStyle(color: Colors.black),),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true); // Return true if user confirms
+                                    },
+                                    child: const Text('Save', style: TextStyle(color: Colors.black),),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          // Check if user confirmed removal
+                          if (confirm == true) {
+                            setState(() {
+                           });
+
+                            await context.read<DriveProvider>().addDonationToDrive(widget.driveId, donationData['donationId']);
+                            // String path = "donationDrive/${widget.driveId}";
+                            // DocumentReference driveRef = FirebaseFirestore.instance.doc(path);
+                            // await FirebaseFirestore.instance.collection('donations').doc(donationData['donationId']).update({'donationDrive': driveRef});
+                            await context.read<DonationsProvider>().addDrive(donationData['donationId'], widget.driveId);
+                          }
+                        },
+                      ),
+                    ),
+                    const Divider(),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
 }

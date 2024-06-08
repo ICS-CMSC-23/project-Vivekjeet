@@ -140,4 +140,30 @@ class FirebaseDriveAPI {
     }
   }
 
+  Future<void> addDonationToDrive(String driveId, String donationId) async {
+  try {
+    String path = "donations/$donationId";
+    DocumentReference donationRef = db.doc(path);
+
+    // Get the current donations array from the drive document
+    DocumentSnapshot driveSnapshot = await db.collection('donationDrives').doc(driveId).get();
+    List<dynamic> donations = driveSnapshot['donations'] ?? [];
+
+    // Check if the donation is already in the donations array
+    if (!donations.contains(donationRef)) {
+      // Add the donation reference to the donations array
+      donations.add(donationRef);
+
+      // Update the 'donations' field in the drive document
+      await db.collection('donationDrives').doc(driveId).update({'donations': donations});
+      print('Donation added to drive successfully.');
+    } else {
+      print('Donation is already added to the drive.');
+    }
+  } catch (e) {
+    print('Error adding donation to drive: $e');
+  }
+}
+
+
 }
