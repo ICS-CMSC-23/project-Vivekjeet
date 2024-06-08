@@ -548,7 +548,8 @@ class _DonorDonateState extends State<DonorDonate> {
                 photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null, 
                 addresses: _addresses.isNotEmpty ? _addresses : null,  
                 contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
-                donationDrive: null
+                donationDrive: null,
+                proofs: null
               );
 
               Provider.of<DonationsProvider>(context, listen: false).addDonation(newDonation, photos);

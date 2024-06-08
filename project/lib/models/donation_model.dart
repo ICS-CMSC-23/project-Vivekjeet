@@ -16,6 +16,7 @@ class DonationModel {
   String status;
   String qrCode;
   DocumentReference? donationDrive;
+  List<String>? proofs;
 
   DonationModel({
     this.donationId,
@@ -31,7 +32,8 @@ class DonationModel {
     required this.schedule,
     required this.status,
     required this.qrCode,
-    this.donationDrive
+    this.donationDrive,
+    this.proofs
   });
 
   factory DonationModel.fromJson(Map<String, dynamic> json) {
@@ -49,7 +51,8 @@ class DonationModel {
       schedule: (json['schedule'] as Timestamp).toDate(),
       status: json['status'],
       qrCode: json['qrCode'],
-      donationDrive: json['donationDrive']
+      donationDrive: json['donationDrive'],
+      proofs: List<String>.from(json['proofs'])
     );
   }
 
@@ -73,7 +76,8 @@ class DonationModel {
       'schedule': Timestamp.fromDate(schedule),
       'status': status,
       'qrCode': qrCode,
-      'donationDrive': donationDrive
+      'donationDrive': donationDrive,
+      'proofs': proofs
     };
   }
 }

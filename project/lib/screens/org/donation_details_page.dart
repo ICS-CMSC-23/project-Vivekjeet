@@ -3,6 +3,10 @@ import 'package:project/models/donation_model.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DonationDetailsPage extends StatefulWidget {
   final DonationModel donation;
@@ -17,18 +21,46 @@ class DonationDetailsPage extends StatefulWidget {
 class _DonationDetailsPageState extends State<DonationDetailsPage> {
   late String _selectedStatus;
   late PageController _pageController;
+  bool _isCompleteStatus = false;
+  List<File> _uploadedPhotos = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _selectedStatus = widget.donation.status;
     _pageController = PageController();
+    _isCompleteStatus = _selectedStatus == 'Complete';
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final pickedFiles = await _picker.pickMultiImage();
+    if (pickedFiles != null) {
+      setState(() {
+        _uploadedPhotos.addAll(pickedFiles.map((file) => File(file.path)));
+      });
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        _uploadedPhotos.add(File(pickedFile.path));
+      });
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _uploadedPhotos.removeAt(index);
+    });
   }
 
   @override
@@ -116,11 +148,89 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
               }).toList(),
               onChanged: (String? newValue) {
                 setState(() {
-                  _selectedStatus = newValue!;
+                  if (newValue == 'Complete' && _uploadedPhotos.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please upload photos before marking as Complete.'),
+                      ),
+                    );
+                  } else {
+                    _selectedStatus = newValue!;
+                    _isCompleteStatus = _selectedStatus == 'Complete';
                   context.read<DonationsProvider>().updateStatus(widget.donation.donationId, _selectedStatus);
+                  }
                 });
               },
             ),
+              const SizedBox(height: 16),
+              _buildSectionTitle('Upload Photos as Proofs'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt),
+                    onPressed: _pickImageFromCamera,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.photo),
+                    onPressed: _pickImageFromGallery,
+                  ),
+                ],
+              ),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: _uploadedPhotos.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final file = entry.value;
+                  return Stack(
+                    children: [
+                      Image.file(
+                        file,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _removeImage(index);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: ()  {
+                    context.read<DonationsProvider>().uploadProofs(widget.donation.donationId, _uploadedPhotos);
+
+                    // Update status to "Complete"
+                    context.read<DonationsProvider>().updateStatus(widget.donation.donationId, 'Complete');
+
+                    // Show Snackbar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Uploaded successfully'),
+                      ),
+                    );
+
+                    Navigator.pop(context);
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color?>(
+                      const Color(0xFF618264),
+                    ),
+                  ),
+                  child:
+                    Text('Upload', style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold)),
+                ),
+              ),
             const Divider(),
             _buildSectionTitle('Donor Details'),
             _buildDetailRow('Username:', widget.donorData['userName']),

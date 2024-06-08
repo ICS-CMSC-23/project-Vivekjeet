@@ -117,4 +117,19 @@ class FirebaseDonationAPI {
         .where('organization', isEqualTo: orgRef)
         .snapshots();
   }
+
+  Future<void> uploadProofs(String? donationId, List<File> photos) async {
+    List<String> urls = [];
+    for (int i = 0; i < photos.length; i++) {
+      try {
+        String imagePath = "donations/$donationId/images/proofs/photo$i";
+        TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        urls.add(downloadUrl);
+      } catch (e) {
+        print('Error uploading images $i: $e');
+      }
+    }
+    await db.collection('donations').doc(donationId).update({'proofs': urls});
+  }
 }
