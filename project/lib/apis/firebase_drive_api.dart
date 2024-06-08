@@ -15,7 +15,7 @@ class FirebaseDriveAPI {
   Stream<QuerySnapshot> getDrivesOfOrganization(String organizationId) {
     return db
         .collection('donationDrives')
-        .where('organization', isEqualTo: db.doc('users/$organizationId'))
+        .where('organization', isEqualTo: db.doc(organizationId))
         .snapshots();
   }
 

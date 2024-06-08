@@ -60,4 +60,9 @@ class DonationsProvider with ChangeNotifier {
     print(message);
     notifyListeners();
   }
+
+  Future<void> updateStatus(String? donationId, String newStatus) async {
+    await firebaseService.updateStatus(donationId, newStatus);
+    notifyListeners();
+  }
 }
