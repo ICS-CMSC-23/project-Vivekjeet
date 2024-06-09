@@ -77,12 +77,6 @@ class _DonorDonateState extends State<DonorDonate> {
     }
   }
 
-  void _addAddressField() {
-    setState(() {
-      _addressControllers.add(TextEditingController());
-    });
-  }
-
   void _removeAddressField(int index) {
     if (_addressControllers.length > 1) {
       setState(() {
@@ -538,16 +532,7 @@ class _DonorDonateState extends State<DonorDonate> {
               ],
             ),
           );
-        }).toList(),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: Center(
-            child: InkWell(
-              onTap: _addAddressField,
-              child: Text("Add Address", style: TextStyle(color: Constants.primaryColor, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        )
+        }).toList()
       ],
     );
   }
