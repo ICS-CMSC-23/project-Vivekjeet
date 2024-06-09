@@ -1,125 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:project/providers/donation_provider.dart';
-// import 'package:provider/provider.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:intl/intl.dart';
-// import '../constants.dart';
-// import '../../providers/user_provider.dart';
-
-// class DonorDonations extends StatefulWidget {
-//   const DonorDonations({super.key});
-//   @override
-//   _DonorDonationsState createState() => _DonorDonationsState();
-// }
-
-// class _DonorDonationsState extends State<DonorDonations> {
-//   @override
-//   void initState() {
-//     super.initState();
-//     final donorId = FirebaseAuth.instance.currentUser?.uid;
-//     if (donorId != null) {
-//       Provider.of<DonationsProvider>(context, listen: false).fetchDonationsByDonor(donorId);
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: <Widget>[
-//             Expanded(
-//               child: listDonations(context),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// Widget listDonations(BuildContext context) {
-//   Stream<QuerySnapshot> donationsStream =
-//       context.watch<DonationsProvider>().donorDonations;
-
-//   return StreamBuilder<QuerySnapshot>(
-//     stream: donationsStream,
-//     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-//       if (snapshot.hasError) {
-//         return Center(
-//           child: Text("Error encountered! ${snapshot.error}"),
-//         );
-//       }
-//       if (snapshot.connectionState == ConnectionState.waiting) {
-//         return const Center(
-//           child: CircularProgressIndicator(),
-//         );
-//       }
-//       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-//         return const Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           crossAxisAlignment: CrossAxisAlignment.center,
-//           children: [
-//             Text('No donations found.',
-//                 style: TextStyle(fontSize: 20, color: Colors.pink)),
-//           ],
-//         );
-//       } else {
-//         return ListView.builder(
-//           itemCount: snapshot.data?.docs.length,
-//           physics: const BouncingScrollPhysics(),
-//           itemBuilder: ((context, index) {
-//             Map<String, dynamic> donation = snapshot.data?.docs[index].data() as Map<String, dynamic>;
-//             return Container(
-//               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-//               key: Key(snapshot.data!.docs[index].id),
-//               child: ListTile(
-//                 leading: const Icon(
-//                   Icons.volunteer_activism,
-//                   color: Colors.black54,
-//                   size: 50,
-//                 ),
-//                 title: Text(
-//                   donation['categories'].join(', '),
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 subtitle: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     // Text('Donation to: ${orgName}'),
-//                     Text('Status: ${donation['status']}'),
-//                     Text('Pickup: ${donation['isPickup'] ? 'Yes' : 'No'}'),
-//                     Text('Weight: ${donation['weightValue']} ${donation['weightUnit']}'),
-//                     Text('Scheduled: ${DateFormat('yyyy-MM-dd hh:mm a').format((donation['schedule'] as Timestamp).toDate())}'),
-//                     if (donation['addresses'] != null) Text('Addresses: ${donation['addresses'].join(', ')}'),
-//                     if (donation['contactNumber'] != null) Text('Contact Number: ${donation['contactNumber']}'),
-//                   ],
-//                 ),
-//                 tileColor: Constants.primaryColor.withOpacity(0.6),
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//                 onTap: () {
-//                   // Actions when tapped, maybe view detailed page
-//                 },
-//               ),
-//             );
-//           }),
-//         );
-//       }
-//     },
-//   );
-// }
-
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
@@ -138,6 +16,17 @@ class DonorDonations extends StatefulWidget {
 }
 
 class _DonorDonationsState extends State<DonorDonations> {
+  final List<String> _statuses = [
+    "All",
+    "Completed",
+    "Pending",
+    "Scheduled for Pick-up",
+    "Confirmed",
+    "Cancelled"
+  ];
+  List<bool> _selectedStatus = [true, false, false, false, false, false];
+  String _currentStatus = "All";
+
   @override
   void initState() {
     super.initState();
@@ -148,6 +37,12 @@ class _DonorDonationsState extends State<DonorDonations> {
     }
   }
 
+  void _updateSelectedStatus(String selectedStatus) {
+    setState(() {
+      _currentStatus = selectedStatus ?? "All";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,8 +51,60 @@ class _DonorDonationsState extends State<DonorDonations> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(width: 10),
+                  Text(
+                    "Filter",
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Constants.primaryColor),
+                  ),
+                  SizedBox(width: 30),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Constants.primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _currentStatus,
+                          icon: Icon(Icons.arrow_downward, color: Colors.white),
+                          iconSize: 18,
+                          elevation: 10,
+                          dropdownColor: Constants.primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                          style: TextStyle(color: Colors.white),
+                          onChanged: (String? newValue) {
+                            _updateSelectedStatus(newValue!);
+                          },
+                          items: _statuses
+                              .map<DropdownMenuItem<String>>((String status) {
+                            return DropdownMenuItem<String>(
+                              value: status,
+                              child: Text(status,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                ],
+              ),
+            ),
             Expanded(
-              child: listDonations(context),
+              child: listDonations(context, _currentStatus),
             ),
           ],
         ),
@@ -166,7 +113,7 @@ class _DonorDonationsState extends State<DonorDonations> {
   }
 }
 
-Widget listDonations(BuildContext context) {
+Widget listDonations(BuildContext context, String status) {
   Stream<QuerySnapshot> donationsStream =
       context.watch<DonationsProvider>().donorDonations;
 
@@ -175,6 +122,20 @@ Widget listDonations(BuildContext context) {
     'Clothes': Icon(Icons.checkroom, color: Constants.iconColor),
     'Cash': Icon(Icons.attach_money, color: Constants.iconColor),
     'Necessities': Icon(Icons.shopping_cart, color: Constants.iconColor),
+  };
+
+  final Map<String, Color> _colors = {
+    'Pending': Color(0xfff4a261).withOpacity(0.9),
+    'Confirmed': Color(0xff1d3557).withOpacity(0.8),
+    'Scheduled for Pick-up': Color(0xffe9c46a).withOpacity(1),
+    'Completed': Constants.primaryColor.withOpacity(0.8),
+    'Cancelled': Color(0xffe63946).withOpacity(0.8),
+
+    // 'Pending': Color(0xfff4a261),
+    // 'Confirmed': Color(0xff1d3557),
+    // 'Scheduled for Pick-up': Color(0xffe9c46a),
+    // 'Completed': Constants.primaryColor,
+    // 'Cancelled': Color(0xffe63946),
   };
 
   return StreamBuilder<QuerySnapshot>(
@@ -200,11 +161,18 @@ Widget listDonations(BuildContext context) {
           ],
         );
       } else {
+        final filteredDonations = snapshot.data!.docs.where((doc) {
+          if (status == "All") {
+            return true;
+          }
+          return (doc.data() as Map<String, dynamic>)['status'] == status;
+        }).toList();
         return ListView.builder(
-          itemCount: snapshot.data?.docs.length,
+          itemCount: filteredDonations.length,
           physics: const BouncingScrollPhysics(),
           itemBuilder: ((context, index) {
-            Map<String, dynamic> donation = snapshot.data?.docs[index].data() as Map<String, dynamic>;
+            Map<String, dynamic> donation =
+                filteredDonations[index].data() as Map<String, dynamic>;
             bool _isCancelDisabled = false;
 
             if (donation['status'] == 'Confirmed' ||
@@ -213,7 +181,7 @@ Widget listDonations(BuildContext context) {
                 donation['status'] == 'Cancelled') _isCancelDisabled = true;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              key: Key(snapshot.data!.docs[index].id),
+              key: Key(filteredDonations[index].id),
               child: ListTile(
                 leading: const Icon(
                   Icons.volunteer_activism,
@@ -222,17 +190,19 @@ Widget listDonations(BuildContext context) {
                 ),
                 title: FutureBuilder<DocumentSnapshot>(
                   future: (donation['organization'] as DocumentReference).get(),
-                  builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  builder: (BuildContext context,
+                      AsyncSnapshot<DocumentSnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Text("Loading organization details...",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ));
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ));
                     }
                     if (snapshot.hasData && snapshot.data!.exists) {
-                      Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+                      Map<String, dynamic> data =
+                          snapshot.data!.data() as Map<String, dynamic>;
                       String organizationName = data['name'];
                       return Text(
                         "Donation to: $organizationName",
@@ -258,7 +228,28 @@ Widget listDonations(BuildContext context) {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(donation['categories'].join(', ')),
-                    Text('Status: ${donation['status']}'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Status:  '),
+                        Container(
+                          child: Text('${donation['status']}',
+                              style: TextStyle(color: Colors.white)),
+                          padding: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: _colors[donation['status']],
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          margin: EdgeInsets.only(right: 5),
+                        ),
+                        // Text('${donation['status']}',
+                        //       style: TextStyle(
+                        //           color: _colors[donation['status']])),
+                      ],
+                    ),
+                    // Text('Status: ${donation['status']}',
+                    //     style: TextStyle(color: _colors[donation['status']])),
                     // Text('Pickup: ${donation['isPickup'] ? 'Yes' : 'No'}'),
                     // Text(
                     //     'Weight: ${donation['weightValue']} ${donation['weightUnit']}'),
@@ -270,6 +261,7 @@ Widget listDonations(BuildContext context) {
                     //   Text('Contact Number: ${donation['contactNumber']}'),
                   ],
                 ),
+                // tileColor: _colors[donation['status']],
                 tileColor: Constants.primaryColor.withOpacity(0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -301,25 +293,34 @@ Widget listDonations(BuildContext context) {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     FutureBuilder<DocumentSnapshot>(
-                                      future: (donation['organization'] as DocumentReference).get(),
-                                      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                                          if (snapshot.hasData && snapshot.data!.exists) {
-                                              Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
-                                              String organizationName = data['name'];
-                                              return Text(organizationName,
-                                                  style: TextStyle(
-                                                      fontSize: 24,
-                                                      fontWeight: FontWeight.bold,
-                                                  ));
-                                          } else {
-                                              return Text("Organization details unavailable",
-                                                  style: TextStyle(
-                                                      fontSize: 24,
-                                                      fontWeight: FontWeight.bold,
-                                                  ));
-                                          }
+                                      future: (donation['organization']
+                                              as DocumentReference)
+                                          .get(),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<DocumentSnapshot>
+                                              snapshot) {
+                                        if (snapshot.hasData &&
+                                            snapshot.data!.exists) {
+                                          Map<String, dynamic> data =
+                                              snapshot.data!.data()
+                                                  as Map<String, dynamic>;
+                                          String organizationName =
+                                              data['name'];
+                                          return Text(organizationName,
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ));
+                                        } else {
+                                          return Text(
+                                              "Organization details unavailable",
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ));
+                                        }
                                       },
-                                  ),
+                                    ),
                                     SizedBox(height: 15),
                                     Text("Items to Donate:",
                                         style: TextStyle(
@@ -380,7 +381,6 @@ Widget listDonations(BuildContext context) {
                                       ],
                                     ),
                                     SizedBox(height: 20),
-                                    
                                     Row(
                                       children: [
                                         Expanded(
@@ -505,7 +505,7 @@ Widget listDonations(BuildContext context) {
                                       ],
                                     ),
                                     Text(
-                                         "Uploaded Photos:",
+                                      "Uploaded Photos:",
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -546,7 +546,6 @@ Widget listDonations(BuildContext context) {
                                             context, donation['donationId']),
                                         SizedBox(height: 30),
                                       ]),
-
                                     SizedBox(height: 20),
                                     if (donation['status'] == 'Completed' &&
                                         donation['proofs'].isNotEmpty)
@@ -577,7 +576,14 @@ Widget listDonations(BuildContext context) {
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
-                                           onPressed: _isCancelDisabled
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: _colors['Cancelled'], // Green red color
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
+                                            ),
+                                          ),
+                                          onPressed: _isCancelDisabled
                                               ? null
                                               : () {
                                                   showDialog(
@@ -633,14 +639,28 @@ Widget listDonations(BuildContext context) {
                                                     },
                                                   );
                                                 },
-                                          child: Text('Cancel Donate'),
+                                          child: Text('Cancel Donate', style: TextStyle(color: Colors.white, fontSize: 16)),
                                         ),
                                         ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                                0xff296e48), // Green color
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
+                                            ),
+                                          ),
                                           onPressed: () {
                                             Navigator.pop(context);
                                           },
-                                          child: Text('Back'),
-                                        ),
+                                          child: const Text(
+                                            'Back',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        )
                                       ],
                                     ),
                                   ],
@@ -785,38 +805,46 @@ Widget _buildDonationContactNumber(String contactNumber) {
 }
 
 Widget _buildDonationStatus(String status) {
-  Color statusColor;
+  Map<String, Color> colors = {
+    'Pending': Color(0xfff4a261),
+    'Confirmed': Color(0xff1d3557),
+    'Scheduled for Pick-up': Color(0xffe9c46a),
+    'Completed': Constants.primaryColor,
+    'Cancelled': Color(0xffe63946),
+  };
 
-  switch (status) {
-    case 'Cancelled':
-      statusColor = Colors.red;
-      break;
-    case 'Pending':
-      statusColor = Colors.orange;
-      break;
-    case 'Confirmed':
-      statusColor = Colors.blue;
-      break;
-    case 'Scheduled for Pick-up':
-      statusColor = Colors.purple;
-      break;
-    case 'Completed':
-      statusColor = Constants.primaryColor;
-      break;
-    default:
-      statusColor = Constants.primaryColor;
-  }
+  Color? statusColor = colors[status];
+
+  // switch (status) {
+  //   case 'Cancelled':
+  //     statusColor = Colors.red;
+  //     break;
+  //   case 'Pending':
+  //     statusColor = Colors.orange;
+  //     break;
+  //   case 'Confirmed':
+  //     statusColor = Colors.blue;
+  //     break;
+  //   case 'Scheduled for Pick-up':
+  //     statusColor = Colors.purple;
+  //     break;
+  //   case 'Completed':
+  //     statusColor = Constants.primaryColor;
+  //     break;
+  //   default:
+  //     statusColor = Constants.primaryColor;
+  // }
 
   return Container(
     padding: EdgeInsets.all(8),
     decoration: BoxDecoration(
-      color: statusColor.withOpacity(0.2),
+      color: statusColor,
       borderRadius: BorderRadius.circular(10),
     ),
     child: Text(
       status,
       style: TextStyle(
-        color: statusColor,
+        color: Colors.white,
         fontSize: 16,
       ),
     ),
