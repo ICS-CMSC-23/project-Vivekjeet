@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
 
   final List<Widget> _pages = [
     const DonationsPage(),
+    const QRCodeScanPage(),  // Added new page here
     const DonationDrivesPage(),
     const OrgProfilePage(),
   ];
@@ -56,7 +59,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
   Scaffold displayOrgHomepage(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ORG NAME"),
+        title: const Text("Elbiyaya", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 32),),
         actions: [
           IconButton(
             icon: const Icon(Icons.exit_to_app),
@@ -68,10 +71,12 @@ class _OrgHomepageState extends State<OrgHomepage> {
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: GNav(
-        gap: 8,
+        gap: 0,
+        padding: const EdgeInsets.fromLTRB(12, 24, 12, 24),
         onTabChange: _onTabChange,
         tabs: const [
           GButton(icon: Icons.home, text: 'Donations'),
+          GButton(icon: Icons.qr_code_scanner, text: 'Scan QR'),  // New tab
           GButton(icon: Icons.drive_eta, text: 'Drives'),
           GButton(icon: Icons.person, text: 'Profile'),
         ],
@@ -231,6 +236,95 @@ class _DonationsPageState extends State<DonationsPage> {
           );
         }
       },
+    );
+  }
+}
+
+class QRCodeScanPage extends StatefulWidget {
+  const QRCodeScanPage({Key? key}) : super(key: key);
+
+  @override
+  _QRCodeScanPageState createState() => _QRCodeScanPageState();
+}
+
+class _QRCodeScanPageState extends State<QRCodeScanPage> {
+  String _scanResult = '';
+
+  Future<void> _scanQRCode() async {
+    try {
+      String scanResult = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666', 
+        'Cancel', 
+        true, 
+        ScanMode.QR,
+      );
+      if (!mounted) return;
+
+      DocumentSnapshot donationSnapshot = await FirebaseFirestore.instance
+          .collection('donations')
+          .doc(scanResult)
+          .get();
+
+      if (donationSnapshot.exists) {
+        DonationModel donation = DonationModel.fromJson(
+    (donationSnapshot.data() ?? {}) as Map<String, dynamic>);
+
+        DocumentReference donorRef = donationSnapshot['donor'];
+
+        DocumentSnapshot donorSnapshot = await donorRef.get();
+
+        if (donorSnapshot.exists) {
+          Map<String, dynamic> donorData = donorSnapshot.data() as Map<String, dynamic>;
+
+          context.read<DonationsProvider>().updateStatus(donation.donationId, 'Confirmed');
+          donation.status = 'Confirmed';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DonationDetailsPage(donation: donation, donorData: donorData),
+            ),
+          );
+        } else {
+          setState(() {
+            _scanResult = 'Donor data not found';
+          });
+        }
+      } else {
+        setState(() {
+          _scanResult = 'Donation not found';
+        });
+      }
+    } on PlatformException {
+      _scanResult = 'Failed to get platform version.';
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (_scanResult.isNotEmpty)
+              Text(
+                'Scan Result: $_scanResult',
+                style: const TextStyle(fontSize: 20),
+              ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _scanQRCode,
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color?>(
+                  const Color(0xFF618264),
+                ),
+              ),
+              child: const Text('Scan Donation', style: TextStyle(color: Colors.white),),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
