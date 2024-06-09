@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
@@ -127,7 +128,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
             _buildDetailRow('Category:', widget.donation.categories.join(', ')),
             _buildDetailRow('Weight:', '${widget.donation.weightValue} ${widget.donation.weightUnit}'),
             _buildDetailRow('Mode:', widget.donation.isPickup ? 'Pickup' : 'Dropoff'),
-            _buildDetailRow('Schedule:', widget.donation.schedule.toString()),
+            _buildDetailRow('Schedule:', DateFormat('MMMM d, yyyy hh:mm a').format(widget.donation.schedule)),
             if (widget.donation.isPickup) ...[
               _buildDetailRow('Contact Number:', widget.donation.contactNumber ?? 'N/A'),
               _buildDetailRow('Addresses:', widget.donation.addresses?.join(', ') ?? 'N/A'),
@@ -153,13 +154,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                   if (newValue == 'Completed' && _uploadedPhotos.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please assign it to a donation drive before marking as Completed.'),
-                      ),
-                    );
-                  } else if (newValue == 'Completed' && widget.donation.donationDrive == null){
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please upload photos before marking as Complete.'),
+                        content: Text('Please upload photos before marking as Completed.'),
                       ),
                     );
                   } else {

@@ -20,18 +20,78 @@ class OrgHomepage extends StatefulWidget {
 
 class _OrgHomepageState extends State<OrgHomepage> {
   int _selectedIndex = 0;
+  String _scanResult = '';
 
   final List<Widget> _pages = [
     const DonationsPage(),
-    const QRCodeScanPage(),
+    const PlaceholderWidget(), // Placeholder for QR code scanning
     const DonationDrivesPage(),
     const OrgProfilePage(),
   ];
 
+  Future<void> _scanQRCode() async {
+    try {
+      String scanResult = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666', 
+        'Cancel', 
+        true, 
+        ScanMode.QR,
+      );
+      if (!mounted) return;
+
+      DocumentSnapshot donationSnapshot = await FirebaseFirestore.instance
+          .collection('donations')
+          .doc(scanResult)
+          .get();
+
+      if (donationSnapshot.exists) {
+        DonationModel donation = DonationModel.fromJson(
+          (donationSnapshot.data() ?? {}) as Map<String, dynamic>
+        );
+
+        DocumentReference donorRef = donationSnapshot['donor'];
+
+        DocumentSnapshot donorSnapshot = await donorRef.get();
+
+        if (donorSnapshot.exists) {
+          Map<String, dynamic> donorData = donorSnapshot.data() as Map<String, dynamic>;
+
+          context.read<DonationsProvider>().updateStatus(donation.donationId, 'Completed');
+          donation.status = 'Completed';
+
+          // Navigate to DonationDetailsPage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DonationDetailsPage(
+                donation: donation,
+                donorData: donorData,
+              ),
+            ),
+          );
+        } else {
+          setState(() {
+            _scanResult = 'Donor data not found';
+          });
+        }
+      } else {
+        setState(() {
+          _scanResult = 'Donation not found';
+        });
+      }
+    } on PlatformException {
+      _scanResult = 'Failed to get platform version.';
+    }
+  }
+
   void _onTabChange(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 1) { // Check if the selected tab is the "Scan QR" tab
+      _scanQRCode();
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
@@ -76,7 +136,7 @@ class _OrgHomepageState extends State<OrgHomepage> {
         onTabChange: _onTabChange,
         tabs: const [
           GButton(icon: Icons.home, text: 'Donations'),
-          GButton(icon: Icons.qr_code_scanner, text: 'Scan QR'), // New tab
+          GButton(icon: Icons.qr_code_scanner, text: 'Scan QR'), // QR scan tab
           GButton(icon: Icons.drive_eta, text: 'Drives'),
           GButton(icon: Icons.person, text: 'Profile'),
         ],
@@ -84,6 +144,16 @@ class _OrgHomepageState extends State<OrgHomepage> {
     );
   }
 }
+
+class PlaceholderWidget extends StatelessWidget {
+  const PlaceholderWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
 
 class DonationsPage extends StatefulWidget {
   const DonationsPage({Key? key}) : super(key: key);
@@ -236,95 +306,6 @@ class _DonationsPageState extends State<DonationsPage> {
           );
         }
       },
-    );
-  }
-}
-
-class QRCodeScanPage extends StatefulWidget {
-  const QRCodeScanPage({Key? key}) : super(key: key);
-
-  @override
-  _QRCodeScanPageState createState() => _QRCodeScanPageState();
-}
-
-class _QRCodeScanPageState extends State<QRCodeScanPage> {
-  String _scanResult = '';
-
-  Future<void> _scanQRCode() async {
-    try {
-      String scanResult = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', 
-        'Cancel', 
-        true, 
-        ScanMode.QR,
-      );
-      if (!mounted) return;
-
-      DocumentSnapshot donationSnapshot = await FirebaseFirestore.instance
-          .collection('donations')
-          .doc(scanResult)
-          .get();
-
-      if (donationSnapshot.exists) {
-        DonationModel donation = DonationModel.fromJson(
-    (donationSnapshot.data() ?? {}) as Map<String, dynamic>);
-
-        DocumentReference donorRef = donationSnapshot['donor'];
-
-        DocumentSnapshot donorSnapshot = await donorRef.get();
-
-        if (donorSnapshot.exists) {
-          Map<String, dynamic> donorData = donorSnapshot.data() as Map<String, dynamic>;
-
-          context.read<DonationsProvider>().updateStatus(donation.donationId, 'Completed');
-          donation.status = 'Completed';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DonationDetailsPage(donation: donation, donorData: donorData),
-            ),
-          );
-        } else {
-          setState(() {
-            _scanResult = 'Donor data not found';
-          });
-        }
-      } else {
-        setState(() {
-          _scanResult = 'Donation not found';
-        });
-      }
-    } on PlatformException {
-      _scanResult = 'Failed to get platform version.';
-    }
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (_scanResult.isNotEmpty)
-              Text(
-                'Scan Result: $_scanResult',
-                style: const TextStyle(fontSize: 20),
-              ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _scanQRCode,
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color?>(
-                  const Color(0xFF618264),
-                ),
-              ),
-              child: const Text('Scan Donation', style: TextStyle(color: Colors.white),),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
