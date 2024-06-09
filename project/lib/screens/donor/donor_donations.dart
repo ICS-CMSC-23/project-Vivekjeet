@@ -300,11 +300,26 @@ Widget listDonations(BuildContext context) {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('organizationName',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        )),
+                                    FutureBuilder<DocumentSnapshot>(
+                                      future: (donation['organization'] as DocumentReference).get(),
+                                      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                                          if (snapshot.hasData && snapshot.data!.exists) {
+                                              Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+                                              String organizationName = data['name'];
+                                              return Text(organizationName,
+                                                  style: TextStyle(
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                  ));
+                                          } else {
+                                              return Text("Organization details unavailable",
+                                                  style: TextStyle(
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                  ));
+                                          }
+                                      },
+                                  ),
                                     SizedBox(height: 15),
                                     Text("Items to Donate:",
                                         style: TextStyle(
