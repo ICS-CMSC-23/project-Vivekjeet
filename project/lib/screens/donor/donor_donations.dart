@@ -129,6 +129,7 @@ import 'package:intl/intl.dart';
 import '../constants.dart';
 import '../../providers/user_provider.dart';
 import '../constants.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class DonorDonations extends StatefulWidget {
   const DonorDonations({super.key});
@@ -203,8 +204,13 @@ Widget listDonations(BuildContext context) {
           itemCount: snapshot.data?.docs.length,
           physics: const BouncingScrollPhysics(),
           itemBuilder: ((context, index) {
-            Map<String, dynamic> donation =
-                snapshot.data?.docs[index].data() as Map<String, dynamic>;
+            Map<String, dynamic> donation = snapshot.data?.docs[index].data() as Map<String, dynamic>;
+            bool _isCancelDisabled = false;
+
+            if (donation['status'] == 'Confirmed' ||
+                donation['status'] == 'Scheduled for Pick-up' ||
+                donation['status'] == 'Completed' ||
+                donation['status'] == 'Cancelled') _isCancelDisabled = true;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               key: Key(snapshot.data!.docs[index].id),
@@ -307,8 +313,17 @@ Widget listDonations(BuildContext context) {
                                           color: Constants.primaryColor,
                                         )),
                                     SizedBox(height: 10),
-                                    _buildCategoryList(
-                                        donation['categories'], _categoryIcons),
+                                    Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Constants.primaryColor
+                                            .withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: _buildCategoryList(
+                                          donation['categories'],
+                                          _categoryIcons),
+                                    ),
                                     SizedBox(height: 20),
                                     Row(
                                       children: [
@@ -351,25 +366,258 @@ Widget listDonations(BuildContext context) {
                                     ),
                                     SizedBox(height: 20),
                                     
-                                    Text('Status: ${donation['status']}'),
-                                    
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "Scheduled Date:",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Constants.primaryColor,
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              _buildDonationDate(
+                                                DateFormat('yyyy-MM-dd').format(
+                                                    (donation['schedule']
+                                                            as Timestamp)
+                                                        .toDate()),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "Scheduled Time:",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Constants.primaryColor,
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              _buildDonationTime(
+                                                DateFormat('hh:mm a').format(
+                                                    (donation['schedule']
+                                                            as Timestamp)
+                                                        .toDate()),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 20),
+                                    if (donation['addresses'] != null &&
+                                        donation['addresses'].isNotEmpty &&
+                                        donation['contactNumber'] != null)
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                //align center
+                                                Text(
+                                                  "Addresses:",
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        Constants.primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 10),
+                                                _buildDonationAddress(
+                                                    donation['addresses']
+                                                        .join(', ')),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    if (donation['addresses'] != null &&
+                                        donation['addresses'].isNotEmpty &&
+                                        donation['contactNumber'] != null)
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  "Contact Number:",
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        Constants.primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 10),
+                                                _buildDonationContactNumber(
+                                                    donation['contactNumber']),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "Status:",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Constants.primaryColor,
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              _buildDonationStatus(
+                                                  donation['status']),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                     Text(
-                                        'Scheduled: ${DateFormat('yyyy-MM-dd hh:mm a').format((donation['schedule'] as Timestamp).toDate())}'),
-                                    if (donation['addresses'] != null)
-                                      Text(
-                                          'Addresses: ${donation['addresses'].join(', ')}'),
-                                    if (donation['contactNumber'] != null)
-                                      Text(
-                                          'Contact Number: ${donation['contactNumber']}'),
+                                         "Uploaded Photos:",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Constants.primaryColor,
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(2),
+                                      child: donation['photos'].isEmpty
+                                          ? Text('No photo available')
+                                          : Image.network(
+                                              donation['photos'][0],
+                                              height: 100,
+                                              width: 120,
+                                            ),
+                                    ),
+                                    if (donation['donationId'] != null &&
+                                        !donation['isPickup'])
+                                      Column(children: [
+                                        Divider(
+                                          color: Constants.blackColor.withOpacity(
+                                              0.45), // Change the color to your desired divider color
+                                          thickness:
+                                              2.0, // Adjust the thickness of the divider
+                                          height:
+                                              20.0, // Adjust the height between the text and the divider
+                                        ),
+                                        SizedBox(height: 10),
+                                        Text(
+                                          'QR Code',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Constants.primaryColor),
+                                        ),
+                                        SizedBox(height: 20),
+                                        _buildQRCodeGenerator(
+                                            context, donation['donationId']),
+                                        SizedBox(height: 30),
+                                      ]),
+
+                                    SizedBox(height: 20),
+                                    if (donation['status'] == 'Completed' &&
+                                        donation['proofs'].isNotEmpty)
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Proof of Donation:",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Constants.primaryColor,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Container(
+                                            margin: const EdgeInsets.all(2),
+                                            child: Image.network(
+                                              donation['proofs'][0],
+                                              height: 100,
+                                              width: 120,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     SizedBox(height: 20),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
-                                          onPressed: () {
-                                            // Cancel donate action
-                                          },
+                                           onPressed: _isCancelDisabled
+                                              ? null
+                                              : () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: Text(
+                                                            'Confirm Cancelation'),
+                                                        content: Text(
+                                                            'Are you sure you want to cancel this donation?'),
+                                                        actions: <Widget>[
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(); // Close the dialog
+                                                            },
+                                                            child: Text('No'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              // Perform cancellation and show Snackbar
+                                                              context
+                                                                  .read<
+                                                                      DonationsProvider>()
+                                                                  .updateStatus(
+                                                                    donation[
+                                                                        'donationId'],
+                                                                    'Cancelled',
+                                                                  );
+                                                              ScaffoldMessenger
+                                                                      .of(context)
+                                                                  .showSnackBar(
+                                                                SnackBar(
+                                                                  content: Text(
+                                                                      'Donation cancelled'),
+                                                                ),
+                                                              );
+                                                              _isCancelDisabled =
+                                                                  true;
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(); // Close the dialog
+                                                            },
+                                                            child: Text('Yes'),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                           child: Text('Cancel Donate'),
                                         ),
                                         ElevatedButton(
@@ -407,8 +655,10 @@ Widget _buildCategoryList(
       return Row(
         children: [
           _categoryIcons[category] ??
-              Icon(Icons
-                  .more_horiz), // Use the icon if available, otherwise use a default error icon
+              Icon(
+                Icons.more_horiz,
+                color: Constants.iconColor,
+              ), // Use the icon if available, otherwise use a default error icon
           SizedBox(width: 8), // Add spacing between icon and text
           Text(category, style: TextStyle(fontSize: 16)),
         ],
@@ -449,4 +699,130 @@ Widget _buildDonationWeight(String _donationWeight) {
       ),
     ),
   );
+}
+
+Widget _buildDonationDate(String date) {
+  return Container(
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Constants.primaryColor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      date,
+      style: TextStyle(
+        color: Constants.primaryColor,
+        fontSize: 16,
+      ),
+    ),
+  );
+}
+
+Widget _buildDonationTime(String time) {
+  return Container(
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Constants.primaryColor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      time,
+      style: TextStyle(
+        color: Constants.primaryColor,
+        fontSize: 16,
+      ),
+    ),
+  );
+}
+
+Widget _buildDonationAddress(String address) {
+  return Container(
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Constants.primaryColor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      address,
+      style: TextStyle(
+        color: Constants.primaryColor,
+        fontSize: 16,
+      ),
+    ),
+  );
+}
+
+Widget _buildDonationContactNumber(String contactNumber) {
+  return Container(
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Constants.primaryColor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      contactNumber,
+      style: TextStyle(
+        color: Constants.primaryColor,
+        fontSize: 16,
+      ),
+    ),
+  );
+}
+
+Widget _buildDonationStatus(String status) {
+  Color statusColor;
+
+  switch (status) {
+    case 'Cancelled':
+      statusColor = Colors.red;
+      break;
+    case 'Pending':
+      statusColor = Colors.orange;
+      break;
+    case 'Confirmed':
+      statusColor = Colors.blue;
+      break;
+    case 'Scheduled for Pick-up':
+      statusColor = Colors.purple;
+      break;
+    case 'Completed':
+      statusColor = Constants.primaryColor;
+      break;
+    default:
+      statusColor = Constants.primaryColor;
+  }
+
+  return Container(
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: statusColor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      status,
+      style: TextStyle(
+        color: statusColor,
+        fontSize: 16,
+      ),
+    ),
+  );
+}
+
+Widget _buildQRCodeGenerator(BuildContext context, _qrCodeData) {
+  return Column(children: [
+    Text("Present this QR Code to the organization for donation."),
+    ListTile(
+      title: _qrCodeData.isEmpty
+          ? Text('No QR Code generated')
+          : Column(
+              children: [
+                QrImageView(
+                  data: _qrCodeData,
+                  version: QrVersions.auto,
+                  size: 300.0,
+                ),
+              ],
+            ),
+    ),
+  ]);
 }
