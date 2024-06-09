@@ -141,7 +141,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                 'Confirmed',
                 'Scheduled for Pick-up',
                 'Completed',
-                'Canceled',
+                'Cancelled',
               ].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,

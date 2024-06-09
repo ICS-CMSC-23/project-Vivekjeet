@@ -276,8 +276,8 @@ class _QRCodeScanPageState extends State<QRCodeScanPage> {
         if (donorSnapshot.exists) {
           Map<String, dynamic> donorData = donorSnapshot.data() as Map<String, dynamic>;
 
-          context.read<DonationsProvider>().updateStatus(donation.donationId, 'Confirmed');
-          donation.status = 'Confirmed';
+          context.read<DonationsProvider>().updateStatus(donation.donationId, 'Completed');
+          donation.status = 'Completed';
           Navigator.push(
             context,
             MaterialPageRoute(
