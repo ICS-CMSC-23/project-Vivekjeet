@@ -115,7 +115,6 @@ class _DonorDetailsState extends State<DonorDetails> {
                         ),
                       ),
                     ),
-                    //Donate Button
                     StreamBuilder<QuerySnapshot>(
                       stream: Provider.of<DriveProvider>(context).drives,
                       builder: (context, snapshot) {
@@ -144,28 +143,29 @@ class _DonorDetailsState extends State<DonorDetails> {
                         );
                       },
                     ),
+                    //Donate Button
                     GestureDetector(
-                      onTap: () {
+                      onTap: selectedOrganization.isOpen == true ? () {
                         Navigator.pushNamed(context, '/donor_donate', arguments: selectedOrganization);
-                      },
+                      } : null,  // Disable the tap action if the organization is not open for donations
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 70),
                         height: size.height * 0.07,
                         decoration: BoxDecoration(
-                            color: Constants.primaryColor,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                offset: const Offset(0, 1),
-                                blurRadius: 5,
-                                color: Constants.primaryColor.withOpacity(.3),
-                              )
-                            ]),
-                        child: const Center(
+                          color: selectedOrganization.isOpen == true ? Constants.primaryColor : Colors.grey,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 1),
+                              blurRadius: 5,
+                              color: Constants.primaryColor.withOpacity(.3),
+                            )
+                          ]),
+                        child: Center(
                           child: Text(
                             'Donate Now!',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: selectedOrganization.isOpen == true ? Colors.white : Colors.black45,
                               fontWeight: FontWeight.bold,
                               fontSize: 20.0,
                             ),

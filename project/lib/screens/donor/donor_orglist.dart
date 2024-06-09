@@ -76,42 +76,55 @@ Widget createOrgList(BuildContext context) {
                     as Map<String, dynamic>);
             organization.id = (snapshot.data as QuerySnapshot).docs[index].id;
             return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                key: Key(organization.id.toString()),
-                child: ListTile(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              key: Key(organization.id.toString()),
+              child: ListTile(
                   leading: const Icon(
-                    Icons.groups_rounded,
-                    color: Colors.black54,
-                    size: 50,
+                      Icons.groups_rounded,
+                      color: Colors.black54,
+                      size: 50,
                   ),
                   title: Text(
-                    organization.organizationName ?? 'No organization name',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      organization.organizationName ?? 'No organization name',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                      ),
                   ),
-                  subtitle: Text(organization.name ?? 'No organization name'),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                          Text(
+                              organization.name ?? 'No organization name',
+                              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                          ),
+                          Text(
+                              organization.isOpen == true ? 'Open' : 'Closed',
+                              style: TextStyle(
+                                  color: organization.isOpen == true ? Colors.green[800] : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                              ),
+                          ),
+                      ],
+                  ),
                   tileColor: Constants.primaryColor.withOpacity(0.6),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20),
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      PageTransition(
-                        type: PageTransitionType.bottomToTop,
-                        child: DonorDetails(),
-                        settings: RouteSettings(
-                          name: '/donor_donate',
-                          arguments: organization,
-                        ),
-                      ),
-                    );
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DonorDetails(),
+                              settings: RouteSettings(
+                                  name: '/donor_donate',
+                                  arguments: organization,
+                              ),
+                          ),
+                      );
                   },
-                ));
+              ));
           }),
         );
       }
