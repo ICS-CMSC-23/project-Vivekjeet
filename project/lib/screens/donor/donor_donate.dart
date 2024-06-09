@@ -134,6 +134,7 @@ class _DonorDonateState extends State<DonorDonate> {
               ..._buildCategoryCheckboxes(),
               SizedBox(height: 20),
               _buildAdditionalItemsInput(),
+              SizedBox(height: 10),
               _buildAddItemButton(),
               SizedBox(height: 10),
               Divider(
@@ -229,6 +230,7 @@ class _DonorDonateState extends State<DonorDonate> {
                 ], // Adjust the height between the text and the divider
               ),
               SizedBox(height: 10),
+              Divider(),
               Visibility(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start, // Ensures left alignment
@@ -491,7 +493,6 @@ class _DonorDonateState extends State<DonorDonate> {
           min: 1.0,
           max: 100.0,
           divisions: 100,
-          label: '${_weightValue.toStringAsFixed(1)} $_weightUnit',
         ),
         if (_weightValidationMessage != null)
           Padding(

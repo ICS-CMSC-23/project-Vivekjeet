@@ -214,13 +214,39 @@ Widget listDonations(BuildContext context) {
                   color: Colors.black54,
                   size: 50,
                 ),
-                title: Text(
-                  "Donation to: ${donation['organizationName']}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                title: FutureBuilder<DocumentSnapshot>(
+                  future: (donation['organization'] as DocumentReference).get(),
+                  builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Text("Loading organization details...",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ));
+                    }
+                    if (snapshot.hasData && snapshot.data!.exists) {
+                      Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+                      String organizationName = data['name'];
+                      return Text(
+                        "Donation to: $organizationName",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    } else {
+                      return Text(
+                        "Organization details unavailable",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    }
+                  },
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
