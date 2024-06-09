@@ -180,7 +180,7 @@ class _DonorDonateState extends State<DonorDonate> {
                       color: Constants.primaryColor),
                 ),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 10),              
               Row(
                 children: [
                   Expanded(
@@ -215,6 +215,7 @@ class _DonorDonateState extends State<DonorDonate> {
                   ),
                 ],
               ),
+              
               SizedBox(height: 10),
               _buildWeightField(),
               SizedBox(height: 10),
@@ -408,9 +409,9 @@ class _DonorDonateState extends State<DonorDonate> {
       selectedColor: Colors.white,
       fillColor: Constants.primaryColor,
       color: Constants.primaryColor,
-      constraints: const BoxConstraints(
+      constraints: BoxConstraints(
         minHeight: 40.0,
-        minWidth: 80.0,
+        minWidth: MediaQuery.of(context).size.width / 4 - 20.0,
       ),
       isSelected: [_donationMethod == 'Pick up', _donationMethod == 'Drop off'],
       onPressed: (int index) {
@@ -480,9 +481,9 @@ class _DonorDonateState extends State<DonorDonate> {
           selectedColor: Colors.white,
           fillColor: Constants.primaryColor,
           color: Constants.primaryColor,
-          constraints: const BoxConstraints(
+          constraints:  BoxConstraints(
             minHeight: 40.0,
-            minWidth: 80.0,
+            minWidth: MediaQuery.of(context).size.width / 4 - 20.0,
           ),
           isSelected: [_weightUnit == 'lb', _weightUnit == 'kg'],
           onPressed: (int index) {
