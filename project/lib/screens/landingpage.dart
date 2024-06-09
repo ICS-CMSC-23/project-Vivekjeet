@@ -42,6 +42,7 @@ class UserHomepage extends StatelessWidget {
         } else {
           if (snapshot.hasData && snapshot.data != null) {
             var userType = snapshot.data!['type'];
+            // var userType = "Donor";
             return _buildHomepageWidget(context, userType);
           } else {
             return const Text('Error fetching user data');
