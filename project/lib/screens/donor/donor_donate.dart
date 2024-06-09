@@ -703,7 +703,7 @@ class _DonorDonateState extends State<DonorDonate> {
             setState(() {
               _qrCodeData = donationId;
               if (!_isPickup) {
-                showQr = true;
+                showQr = true; //checker
               }
             });
 
