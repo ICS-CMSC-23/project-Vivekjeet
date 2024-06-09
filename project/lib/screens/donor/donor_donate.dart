@@ -62,6 +62,7 @@ class _DonorDonateState extends State<DonorDonate> {
   String _qrCodeData = "";
   String? donationId;
   bool showQr = false;
+  List<String> temp = [];
 
   @override
   void initState() {
@@ -693,7 +694,7 @@ class _DonorDonateState extends State<DonorDonate> {
             addresses: _addresses.isNotEmpty ? _addresses : null,
             contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
             donationDrive: null,
-            proofs: null,
+            proofs: temp,
           );
 
           try {
