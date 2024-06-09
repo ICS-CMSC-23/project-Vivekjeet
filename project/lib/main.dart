@@ -28,7 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: ((context) => DonationsProvider())),
         ChangeNotifierProvider(create: ((context) => DriveProvider()))
       ],
-      child: const MyApp(),
+      child: MyApp(),
     ),
   );
 }

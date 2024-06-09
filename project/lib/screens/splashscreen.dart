@@ -77,7 +77,7 @@ class SplashScreen extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            'Log In',
+                            'Sign In',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -97,7 +97,7 @@ class SplashScreen extends StatelessWidget {
                             side: const BorderSide(color:Color(0xFF618264)),
                           ),
                           child: const Text(
-                            'Sign up',
+                            'Sign Up',
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 16,
