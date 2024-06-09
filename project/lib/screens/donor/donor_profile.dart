@@ -130,7 +130,7 @@ class _DonorProfileBodyState extends State<DonorProfileBody> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Text(
-            '${_donorData['name']}',
+            '${_donorData['userName']}',
             style: const TextStyle(
               fontSize: 20,
               color: Colors.white,

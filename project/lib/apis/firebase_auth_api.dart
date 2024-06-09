@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseAuthAPI {
   static final FirebaseAuth auth = FirebaseAuth.instance;
   static final FirebaseFirestore db = FirebaseFirestore.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
 
   Stream<User?> getUser() {
     return auth.authStateChanges();
@@ -85,7 +87,25 @@ class FirebaseAuthAPI {
     }
   }
 
+  Future<UserCredential> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+    if (googleUser != null) {
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      UserCredential userCredential = await auth.signInWithCredential(credential);
+      return userCredential;
+    }
+    throw FirebaseAuthException(
+      code: 'ERROR_ABORTED_BY_USER',
+      message: 'Sign in aborted by user.',
+    );
+  }
+
   Future<void> signOut() async {
-    auth.signOut();
+    await googleSignIn.signOut();  // Sign out from Google
+    await auth.signOut();          // Sign out from Firebase
   }
 }

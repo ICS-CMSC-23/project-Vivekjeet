@@ -475,7 +475,7 @@ class _SignupPageState extends State<SignupPage> {
               const Color(0xFF618264),
             ),
           ),
-          child: const Text('S I G N U P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: const Text('S I G N   U P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
       )
     );
@@ -492,7 +492,7 @@ class _SignupPageState extends State<SignupPage> {
             onPressed: () async {
               Navigator.pop(context);
             },
-            child: const Text("Login here", style: TextStyle(color: Color(0xFF618264), fontWeight: FontWeight.bold),),
+            child: const Text("Sign in here", style: TextStyle(color: Color(0xFF618264), fontWeight: FontWeight.bold),),
           )
         ],
       )

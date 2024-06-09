@@ -1,5 +1,4 @@
 import 'package:email_validator/email_validator.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
@@ -17,12 +16,10 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   bool _obscureText = true;
-
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-
-
     //Form field for the email
     final email = TextFormField(
       key: const Key('emailField'),
@@ -129,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('L O G I N   ', style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold)),
+              Text('S I G N   I N   ', style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold)),
               Icon(Icons.login, color: Color.fromARGB(255, 255, 255, 255),)
             ]
           )
@@ -141,35 +138,65 @@ class _LoginPageState extends State<LoginPage> {
       key: const Key('loginButton'),
       padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
       child: SizedBox(
-        width: 200.0, // Adjust width as needed
-        height: 50.0, // Adjust height as needed
+        width: 200.0,
+        height: 50.0,
         child: OutlinedButton(
           onPressed: () async {
-            // Handle Google login
+            try {
+              setState(() {
+                isLoading = true;
+              });
+              await Provider.of<MyAuthProvider>(context, listen: false).signInWithGoogle();
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            } catch (e) {
+              // Handling Google Sign-In cancellation
+              if (e is Exception && (e.toString().contains('sign_in_canceled') || e.toString().contains('ERROR_ABORTED_BY_USER'))) {
+                // This is likely a user-cancelled action, handle as you see fit, maybe just log it
+                if (context.mounted) {
+                  print("User cancelled the Google sign-in process.");
+                }
+              } else {
+                // For actual errors, show a snackbar
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Failed to sign in with Google: ${e.toString()}"))
+                  );
+                }
+              }
+            } finally {
+              if (context.mounted) {
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            }
           },
           style: ButtonStyle(
             side: MaterialStateProperty.all<BorderSide>(const BorderSide(color: Color(0xFF618264))),
             shape: MaterialStateProperty.all<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0))),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Image.asset(
-                'images/google.png', // Replace with the path to your Google logo image
-                height: 24,
-                width: 24,
+          child: isLoading
+            ? const CircularProgressIndicator()
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Image.asset(
+                    'images/google.png',
+                    height: 24,
+                    width: 24,
+                  ),
+                  const SizedBox(width: 40,),
+                  const Text(
+                    "Sign in with Google",
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ],
               ),
-              const SizedBox(width: 40,),
-              const Text(
-                "Sign in with Google",
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            ],
-          ),
         ),
       ),
     );
-
 
     //Sign up button for new users
     final signUpButton = Padding(

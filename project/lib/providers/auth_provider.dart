@@ -31,6 +31,11 @@ class MyAuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> signInWithGoogle() async {
+    await authService.signInWithGoogle();
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     await authService.signOut();
     notifyListeners();
