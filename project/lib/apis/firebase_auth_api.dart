@@ -66,6 +66,7 @@ class FirebaseAuthAPI {
     }
   }
 
+  // sign in with email and password
   Future<UserCredential> signIn(String email, String password) async {
     UserCredential credential;
     try {
@@ -86,30 +87,40 @@ class FirebaseAuthAPI {
       throw (e);
     }
   }
-
+  
+  // Sign in with Google and update user profile picture
   Future<UserCredential> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    if (googleUser != null) {
+    try {
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'ERROR_ABORTED_BY_USER',
+          message: 'Sign-in aborted by user',
+        );
+      }
+
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+
+      UserCredential userCredential = await auth.signInWithCredential(credential);
       
-      // Signing in with the credential
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      // Retrieve the Google profile picture and store it in Firestore under the user's document
-      FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-        'profilePicture': googleUser.photoUrl,  // Store the Google profile photo URL
-      }, SetOptions(merge: true));
+      String? googleProfileUrl = googleUser.photoUrl;
+      if (googleProfileUrl != null && userCredential.user!.photoURL != googleProfileUrl) {
+        await userCredential.user!.updatePhotoURL(googleProfileUrl);
+        
+        await FirebaseFirestore.instance.collection('users')
+            .doc(userCredential.user!.uid)
+            .update({'profilePicture': googleProfileUrl});
+      }
 
       return userCredential;
+    } on FirebaseAuthException catch (e) {
+      print('Error during Google sign in: ${e.message}');
+      throw e;
     }
-    throw FirebaseAuthException(
-      code: 'ERROR_ABORTED_BY_USER',
-      message: 'Sign in aborted by user.',
-    );
   }
 
   Future<void> signOut() async {
