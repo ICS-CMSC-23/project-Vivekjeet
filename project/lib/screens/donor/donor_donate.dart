@@ -70,6 +70,10 @@ class _DonorDonateState extends State<DonorDonate> {
   String? donationId;
   bool showQr = false;
   List<String> temp = [];
+  List<String> _addressOptions = [];
+  String? _selectedAddress;
+
+
 
   @override
   void initState() {
@@ -77,19 +81,34 @@ class _DonorDonateState extends State<DonorDonate> {
     _fetchDonorAddresses();
   }
 
+  // void _fetchDonorAddresses() async {
+  //   User? donor = FirebaseAuth.instance.currentUser;
+  //   if (donor != null) {
+  //     DocumentSnapshot donorData = await FirebaseFirestore.instance.collection('users').doc(donor.uid).get();
+  //     List<dynamic> addresses = donorData['addresses'] ?? [];
+  //     setState(() {
+  //       _addressControllers = addresses.map((address) => TextEditingController(text: address)).toList();
+  //       if (_addressControllers.isEmpty) {
+  //         _addressControllers.add(TextEditingController());
+  //       }
+  //     });
+  //   }
+  // }
   void _fetchDonorAddresses() async {
     User? donor = FirebaseAuth.instance.currentUser;
     if (donor != null) {
       DocumentSnapshot donorData = await FirebaseFirestore.instance.collection('users').doc(donor.uid).get();
       List<dynamic> addresses = donorData['addresses'] ?? [];
       setState(() {
-        _addressControllers = addresses.map((address) => TextEditingController(text: address)).toList();
-        if (_addressControllers.isEmpty) {
-          _addressControllers.add(TextEditingController());
+        _addressOptions = List<String>.from(addresses);
+        if (_addressOptions.isNotEmpty) {
+          _selectedAddress = _addressOptions.first;
         }
       });
     }
   }
+
+
 
   void _removeAddressField(int index) {
     if (_addressControllers.length > 1) {
@@ -271,7 +290,7 @@ class _DonorDonateState extends State<DonorDonate> {
                                 color: Constants.primaryColor),
                         ),
                         SizedBox(height: 10),
-                        _buildAddressFields(),
+                        _buildAddressDropdown(),
                     ],
                 ),
                 visible: _isPickup
@@ -590,45 +609,63 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  Widget _buildAddressFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ..._addressControllers.asMap().entries.map((entry) {
-          int index = entry.key;
-          TextEditingController controller = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(top: index > 0 ? 10 : 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.home, color: Constants.iconColor),
-                      hintText: "Address",
-                      hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xFF618264)),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xFF618264)),
-                        borderRadius: BorderRadius.circular(50),
-                    )),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () => _removeAddressField(index),
-                ),
-              ],
-            ),
-          );
-        }).toList()
-      ],
-    );
-  }
+
+  //   Widget _buildAddressDropdown() {
+  //   return DropdownButtonFormField<String>(
+  //     value: _selectedAddress,
+  //     onChanged: (String? newValue) {
+  //       setState(() {
+  //         _selectedAddress = newValue;
+  //       });
+  //     },
+  //     decoration: InputDecoration(
+  //       border: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(50),
+  //         //color
+  //         color: Constants.primaryColor,
+  //       ),
+  //     ),
+  //     items: _addressOptions.map<DropdownMenuItem<String>>((String value) {
+  //       return DropdownMenuItem<String>(
+  //         value: value,
+  //         child: Text(value),
+  //       );
+  //     }).toList(),
+  //   );
+  // }
+
+
+Widget _buildAddressDropdown() {
+  return DropdownButtonFormField<String>(
+    value: _selectedAddress,
+    onChanged: (String? newValue) {
+      setState(() {
+        _selectedAddress = newValue;
+      });
+    },
+    decoration: InputDecoration(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(50),
+        borderSide: BorderSide(
+          color: Constants.primaryColor, // Set border color here
+        ),
+      ),
+      prefixIcon: Icon(
+        Icons.location_on, // Set your desired icon here
+        color: Constants.iconColor, // Set icon color here
+      ),
+    ),
+    items: _addressOptions.map<DropdownMenuItem<String>>((String value) {
+      return DropdownMenuItem<String>(
+        value: value,
+        child: Text(value, style: TextStyle(color: Constants.primaryColor)),
+      );
+    }).toList(),
+  );
+}
+
+
+
 
   Widget _buildQRCodeGenerator(BuildContext context, status) {
     return Column(children: [
@@ -802,7 +839,7 @@ void _downloadQRCode(BuildContext context, String qrCodeData, String status) asy
             status: 'Pending',
             qrCode: ' ',
             photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null,
-            addresses: addresses.isNotEmpty ? addresses : null,
+            addresses: _selectedAddress != null ? [_selectedAddress!] : null,
             contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
             donationDrive: null,
             proofs: temp,
