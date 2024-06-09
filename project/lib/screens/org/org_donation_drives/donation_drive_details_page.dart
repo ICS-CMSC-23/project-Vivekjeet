@@ -531,7 +531,8 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
 
                 return Column(
                   children: [
-                    ListTile(
+                    donationData['donationDrive'] == null
+                    ? ListTile(
                       title: Text(
                         donationData['categories'].join(', '),
                         style: const TextStyle(
@@ -592,8 +593,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                             },
                           );
 
-                          // Check if user confirmed removal
-                          if (confirm == true) {
+                          if (confirm == true && donationData['status'] == "Completed") {
                             setState(() {
                            });
 
@@ -608,10 +608,17 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                             } catch (e) {
                               print("Error: $e");
                             }
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please mark the donation as completed first.'),
+                              ),
+                            );
                           }
                         },
                       ),
-                    ),
+                    )
+                    : Container(),
                     const Divider(),
                   ],
                 );
@@ -622,5 +629,4 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
       },
     );
   }
-
 }
