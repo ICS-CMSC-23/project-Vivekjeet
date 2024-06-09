@@ -13,7 +13,7 @@ import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:project/models/user_model.dart';
-// import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class Constants {
   // Primary color
@@ -31,6 +31,8 @@ class DonorDonate extends StatefulWidget {
 
 class _DonorDonateState extends State<DonorDonate> {
   final _formKey = GlobalKey<FormState>();
+
+  final DocumentReference _currentDonorId = FirebaseFirestore.instance.doc('users/${FirebaseAuth.instance.currentUser!.uid}');
 
   final Map<String, Icon> _categoryIcons = {
     'Food': Icon(Icons.fastfood, color: Constants.iconColor),
@@ -56,6 +58,11 @@ class _DonorDonateState extends State<DonorDonate> {
   TextEditingController _contactController = TextEditingController();
 
   List<TextEditingController> _addressControllers = [];
+
+  String _qrCodeData = "";
+  String? donationId;
+  bool showQr = false;
+  List<String> temp = [];
 
   @override
   void initState() {
@@ -119,7 +126,7 @@ class _DonorDonateState extends State<DonorDonate> {
               Text(
                 'Category',
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Constants.primaryColor),
               ),
@@ -147,25 +154,41 @@ class _DonorDonateState extends State<DonorDonate> {
                 ),
               ),
               SizedBox(height: 10),
-              Text(
-                'Donation Method',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
+              Row(
+                children: [
+                  Expanded(
+                      child: Column(
+                    children: [
+                      Text(
+                        'Donation Method',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Constants.primaryColor),
+                      ),
+                      SizedBox(height: 10),
+                      _buildDonationMethod(),
+                    ],
+                  )),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Weight',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Constants.primaryColor),
+                        ),
+                        SizedBox(height: 10),
+                        _buildWeightUnit(),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
-              _buildDonationMethod(),
-              SizedBox(height: 10),
-              Text(
-                'Weight',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.primaryColor),
-              ),
-              SizedBox(height: 10),
-              _buildWeightUnit(),
               _buildWeightField(),
               SizedBox(height: 10),
               _buildPhotoField(),
@@ -180,15 +203,32 @@ class _DonorDonateState extends State<DonorDonate> {
                     color: Constants.primaryColor),
               ),
               SizedBox(height: 10),
-              _buildDatePicker(context),
-              _buildTimePicker(context),
-              Divider(
-                color: Constants.blackColor.withOpacity(
-                    0.45), // Change the color to your desired divider color
-                thickness: 2.0, // Adjust the thickness of the divider
-                height:
-                    20.0, // Adjust the height between the text and the divider
+               Row(
+                children: [
+                  Expanded(
+                      child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Constants.iconColor,
+                      ),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: _buildDatePicker(context),
+                  )),
+                  SizedBox(width: 5),
+                  Expanded(
+                      child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Constants.iconColor,
+                      ),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: _buildTimePicker(context),
+                  )),
+                ], // Adjust the height between the text and the divider
               ),
+              SizedBox(height: 10),
               Visibility(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start, // Ensures left alignment
@@ -228,6 +268,30 @@ class _DonorDonateState extends State<DonorDonate> {
                 visible: _isPickup
               ),
               SizedBox(height: 30),
+               SizedBox(height: 10), // Adjust as needed
+              Visibility(
+                  child: Column(children: [
+                    Divider(
+                      color: Constants.blackColor.withOpacity(
+                          0.45), // Change the color to your desired divider color
+                      thickness: 2.0, // Adjust the thickness of the divider
+                      height:
+                          20.0, // Adjust the height between the text and the divider
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'QR Code',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Constants.primaryColor),
+                    ),
+                    SizedBox(height: 10),
+                    SizedBox(height: 20),
+                    _buildQRCodeGenerator(context),
+                    SizedBox(height: 30),
+                  ]),
+                  visible: showQr),
               _buildDonateButton(context),
             ],
           ),
@@ -310,32 +374,40 @@ class _DonorDonateState extends State<DonorDonate> {
   //     ),
 
   Widget _buildDonationMethod() {
-    return DropdownButton<String>(
-      value: _donationMethod,
-      onChanged: (String? newValue) {
+    return ToggleButtons(
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      selectedBorderColor: Constants.blackColor,
+      selectedColor: Colors.white,
+      fillColor: Constants.primaryColor,
+      color: Constants.primaryColor,
+      constraints: const BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 80.0,
+      ),
+      isSelected: [_donationMethod == 'Pick up', _donationMethod == 'Drop off'],
+      onPressed: (int index) {
         setState(() {
-          _donationMethod = newValue!;
+          _donationMethod = index == 0 ? 'Pick up' : 'Drop off';
           if (_donationMethod == 'Pick up') {
             _isPickup = true;
+            showQr = false;
           } else {
             _isPickup = false;
           }
         });
       },
-      items: <String>['Pick up', 'Drop off'].map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
+      children: const <Widget>[
+        Text('Pick up'),
+        Text('Drop off'),
+      ],
     );
   }
 
   Widget _buildDatePicker(BuildContext context) {
     return ListTile(
-      leading: Text('Date'),
-      title: Text('${DateFormat('yyyy-MM-dd').format(_selectedDate)}'),
-      trailing: Icon(Icons.calendar_today),
+      leading: Icon(Icons.calendar_today, color: Constants.iconColor),
+      title: Text('${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       onTap: () async {
         DateTime? picked = await showDatePicker(
           context: context,
@@ -354,9 +426,9 @@ class _DonorDonateState extends State<DonorDonate> {
 
   Widget _buildTimePicker(BuildContext context) {
     return ListTile(
-      leading: Text('Time'),
-      title: Text('${_selectedTime.format(context)}'),
-      trailing: Icon(Icons.access_time),
+      leading: Icon(Icons.access_time, color: Constants.iconColor),
+      title: Text('${_selectedTime.format(context)}',
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       onTap: () async {
         TimeOfDay? picked = await showTimePicker(
           context: context,
@@ -374,59 +446,64 @@ class _DonorDonateState extends State<DonorDonate> {
   Widget _buildWeightUnit() {
     return Row(
       children: [
-        Text('Unit: ',
-              style: TextStyle(fontSize: 16),),
-        DropdownButton<String>(
-          value: _weightUnit,
-          items: ['lb', 'kg'].map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
+        ToggleButtons(
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          selectedBorderColor: Constants.blackColor,
+          selectedColor: Colors.white,
+          fillColor: Constants.primaryColor,
+          color: Constants.primaryColor,
+          constraints: const BoxConstraints(
+            minHeight: 40.0,
+            minWidth: 80.0,
+          ),
+          isSelected: [_weightUnit == 'lb', _weightUnit == 'kg'],
+          onPressed: (int index) {
             setState(() {
-              _weightUnit = newValue!;
+             _weightUnit = index == 0 ? 'lb' : 'kg';
             });
           },
+          children: const <Widget>[
+            Text('lb'),
+            Text('kg'),
+          ],
         ),
       ],
     );
   }
 
-  double _weightValue = 0.0;
+  double _weightValue = 1.0;
 
   Widget _buildWeightField() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Value: ${_weightValue.toStringAsFixed(1)} $_weightUnit',
-        style: TextStyle(fontSize: 16),
-      ),
-      Slider(
-        value: _weightValue,
-        onChanged: (newValue) {
-          setState(() {
-            _weightValue = newValue;
-          });
-        },
-        min: 0.0,
-        max: 100.0,
-        divisions: 100,
-        label: '${_weightValue.toStringAsFixed(1)} $_weightUnit',
-      ),
-      if (_weightValidationMessage != null)
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            _weightValidationMessage!,
-            style: TextStyle(color: Colors.red),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Value: ${_weightValue.toStringAsFixed(1)} $_weightUnit',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Constants.primaryColor),
         ),
-    ],
-  );
-}
+        Slider(
+          value: _weightValue,
+          onChanged: (newValue) {
+            setState(() {
+              _weightValue = newValue;
+            });
+          },
+          min: 1.0,
+          max: 100.0,
+          divisions: 100,
+          label: '${_weightValue.toStringAsFixed(1)} $_weightUnit',
+        ),
+        if (_weightValidationMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              _weightValidationMessage!,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+      ],
+    );
+  }
 
   String? _weightValidationMessage;
 
@@ -441,40 +518,48 @@ class _DonorDonateState extends State<DonorDonate> {
   }
 
   Widget _buildPhotoField() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Text(
-          'Photo',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Constants.primaryColor),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Text(
+            'Upload Photo',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Constants.primaryColor),
+          ),
         ),
-      ),
-      _photo != null
-          ? Image.file(_photo!)
-          : Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: Icon(Icons.camera_alt, color: Colors.white70, size: 50),
-            ),
-      Center( 
-        child: ElevatedButton(
-          onPressed: _pickImageFromCamera,
-          child: Text('Take Photo', style: TextStyle(color: Colors.white)),
-          style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+        _photo != null
+            ? Image.file(_photo!)
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.grey[300],
+                ),
+                height: 200,
+                width: double.infinity,
+                child: Icon(Icons.camera_alt, color: Colors.white70, size: 50),
+              ),
+        SizedBox(height: 10),
+        Center(
+          child: ElevatedButton(
+            onPressed: _pickImageFromCamera,
+            child: Text('Take Photo', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Constants.primaryColor),
+          ),
         ),
-      ),
-      SizedBox(height: 20),
-    ],
-  );
+        SizedBox(height: 20),
+      ],
+    );
   }
 
   Widget _buildContactNumberField() {
     return TextFormField(
       controller: _contactController,
-       decoration: InputDecoration(
+      decoration: InputDecoration(
         hintText: "+63",
         hintStyle: const TextStyle(color: Color.fromARGB(175, 42, 46, 52)),
         prefixIcon: Icon(Icons.phone, color: Constants.iconColor),
@@ -537,49 +622,117 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
+  Widget _buildQRCodeGenerator(BuildContext context) {
+    return Column(children: [
+      Text("Present this QR Code to the organization for donation."),
+      ListTile(
+        title: _qrCodeData.isEmpty
+            ? Text('No QR Code generated')
+            : Column(
+                children: [
+                  QrImageView(
+                    data: _qrCodeData,
+                    version: QrVersions.auto,
+                    size: 300.0,
+                  ),
+                  Text(_qrCodeData), // Display the QR code data as text
+                ],
+              ),
+      ),
+    ]);
+  }
+
   Widget _buildDonateButton(BuildContext context) {
-    return Center(
-        child: ElevatedButton(
-          onPressed: () {
-            final UserModel selectedOrganization = ModalRoute.of(context)!.settings.arguments as UserModel;
-            DocumentReference donorRef = FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid);
-            DocumentReference orgRef = FirebaseFirestore.instance.collection('users').doc(selectedOrganization.id);
+  return Center(
+    child: ElevatedButton(
+      onPressed: () async {
+        // Ensure that the selected organization is passed as an argument
+        final UserModel? selectedOrganization =
+            ModalRoute.of(context)?.settings.arguments as UserModel?;
 
-            List<String> addresses = _addressControllers.map((controller) => controller.text.trim()).toList();
+        if (selectedOrganization == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('No organization selected')));
+          return;
+        }
 
-            if (_formKey.currentState!.validate()) {
-              List<String> selectedCategories = _categorySelections.entries
-                .where((entry) => entry.value)
-                .map((entry) => entry.key)
-                .toList();
+        DocumentReference donorRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser?.uid);
+        DocumentReference orgRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(selectedOrganization.id);
 
-              List<File> photos = _photo != null ? [File(_photo!.path)] : [];
+        List<String> addresses = _addressControllers.map((controller) => controller.text.trim()).toList();
 
-              DonationModel newDonation = DonationModel(
-                donor: donorRef,
-                organization: orgRef,
-                categories: selectedCategories,
-                weightValue: _weightValue,
-                weightUnit: _weightUnit,
-                isPickup: _isPickup,
-                schedule: _selectedDate,
-                status: 'Pending',
-                qrCode: 'Sample QR Code',
-                photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null, 
-                addresses: addresses.isNotEmpty ? addresses : null,  
-                contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
-                donationDrive: null
-              );
+        if (_formKey.currentState!.validate()) {
+          List<String> selectedCategories = _categorySelections.entries
+              .where((entry) => entry.value)
+              .map((entry) => entry.key)
+              .toList();
 
-              Provider.of<DonationsProvider>(context, listen: false).addDonation(newDonation, photos);
+          List<File> photos = _photo != null ? [File(_photo!.path)] : [];
 
-              ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('Donation Successful')));
-            }
-          },
-          child: Text('Donate', style: TextStyle(color: Colors.white)),
-          style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
-        ),
+          if (selectedCategories.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please select at least one category')));
+            return;
+          }
+
+          if (_weightValue == null || _weightValue <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please enter a valid weight value')));
+            return;
+          }
+
+          if (_selectedDate == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Please select a schedule date')));
+            return;
+          }
+
+          DonationModel newDonation = DonationModel(
+            donor: donorRef,
+            organization: orgRef,
+            categories: selectedCategories,
+            weightValue: _weightValue,
+            weightUnit: _weightUnit,
+            isPickup: _isPickup,
+            schedule: _selectedDate,
+            status: 'Pending',
+            qrCode: ' ',
+            photos: photos.isNotEmpty ? photos.map((file) => file.path).toList() : null,
+            addresses: addresses.isNotEmpty ? addresses : null,
+            contactNumber: _contactController.text.isNotEmpty ? _contactController.text : null,
+            donationDrive: null,
+            proofs: temp,
+          );
+
+          try {
+            String donationId = await Provider.of<DonationsProvider>(context, listen: false)
+                .addDonation(newDonation, photos);
+
+            setState(() {
+              _qrCodeData = donationId;
+              if (!_isPickup) {
+                showQr = true;
+              }
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Donation Successful')));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to add donation: $e')));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please complete the form')));
+        }
+      },
+      child: Text('Donate', style: TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+      ),
     );
   }
 }
