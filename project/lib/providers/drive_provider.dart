@@ -4,25 +4,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:project/models/drive_model.dart';
 import '../apis/firebase_drive_api.dart';
+import 'package:provider/provider.dart';
 
 class DriveProvider with ChangeNotifier {
   late FirebaseDriveAPI firebaseService;
-  late Stream<QuerySnapshot> _drivesStream;
+  Stream<QuerySnapshot>? _drivesStream;
   List<DocumentReference> _donationsOfDrive = [];
-  late DocumentSnapshot _selectedDriveStream;
+  DocumentSnapshot? _selectedDriveStream;
 
-  DriveProvider() {
-    firebaseService = FirebaseDriveAPI();
-  }
+  DriveProvider() : firebaseService = FirebaseDriveAPI();
 
-  Stream<QuerySnapshot> get drives => _drivesStream;
+  Stream<QuerySnapshot>? get drives => _drivesStream;
   List<DocumentReference> get donationReferences => _donationsOfDrive;
-  DocumentSnapshot<Object?> get selectedDrive => _selectedDriveStream;
+  DocumentSnapshot? get selectedDrive => _selectedDriveStream; // Nullable return type
 
-  Stream<QuerySnapshot<Object?>> loadDrivesOfOrganization(String organizationId) {
+  Stream<QuerySnapshot> loadDrivesOfOrganization(String organizationId) {
     _drivesStream = firebaseService.getDrivesOfOrganization(organizationId);
     notifyListeners();
-    return _drivesStream;
+    return _drivesStream!;
   }
 
   Future<void> loadDonationsOfDrive(String driveId) async {
@@ -33,7 +32,7 @@ class DriveProvider with ChangeNotifier {
   Future<DocumentSnapshot> fetchDriveById(String driveId) async {
     _selectedDriveStream = await firebaseService.getDriveById(driveId);
     notifyListeners();
-    return _selectedDriveStream;
+    return _selectedDriveStream!;
   }
 
   Future<void> addDrive(DriveModel drive, List<File> photos) async {

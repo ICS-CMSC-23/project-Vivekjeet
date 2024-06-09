@@ -13,9 +13,10 @@ class FirebaseDriveAPI {
   static final FirebaseStorage storage = FirebaseStorage.instance;
 
   Stream<QuerySnapshot> getDrivesOfOrganization(String organizationId) {
+    DocumentReference organizationRef = db.doc('users/' + organizationId);
     return db
         .collection('donationDrives')
-        .where('organization', isEqualTo: db.doc(organizationId))
+        .where('organization', isEqualTo: organizationRef)
         .snapshots();
   }
 

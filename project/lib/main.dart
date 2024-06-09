@@ -52,8 +52,6 @@ class MyApp extends StatelessWidget {
         '/orghomepage': (context) => const OrgHomepage(),
         '/adminhomepage': (context) => const AdminHomepage(),
         '/donor_donate': (context) => const DonorDonate(),
-        
-        
       },
     );
   }
