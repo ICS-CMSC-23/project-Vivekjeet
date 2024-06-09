@@ -14,6 +14,13 @@ import 'package:provider/provider.dart';
 import 'package:project/models/donation_model.dart';
 import 'package:project/models/user_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:gallery_saver/gallery_saver.dart';
+
 
 class Constants {
   // Primary color
@@ -290,7 +297,7 @@ class _DonorDonateState extends State<DonorDonate> {
                     ),
                     SizedBox(height: 10),
                     SizedBox(height: 20),
-                    _buildQRCodeGenerator(context),
+                    _buildQRCodeGenerator(context, 'Pending'),
                     SizedBox(height: 30),
                   ]),
                   visible: showQr),
@@ -623,7 +630,7 @@ class _DonorDonateState extends State<DonorDonate> {
     );
   }
 
-  Widget _buildQRCodeGenerator(BuildContext context) {
+  Widget _buildQRCodeGenerator(BuildContext context, status) {
     return Column(children: [
       Text("Present this QR Code to the organization for donation."),
       ListTile(
@@ -637,11 +644,103 @@ class _DonorDonateState extends State<DonorDonate> {
                     size: 300.0,
                   ),
                   Text(_qrCodeData), // Display the QR code data as text
+                  ElevatedButton(
+                  onPressed: () {
+                    // Function to download QR code
+                    _downloadQRCode(context, _qrCodeData, status);
+                    //pop
+                  },
+                  child: Text('Download QR Code'),
+                ),
                 ],
               ),
       ),
     ]);
   }
+
+
+
+void _downloadQRCode(BuildContext context, String qrCodeData, String status) async {
+  if (context == null) {
+    print("Error: Null context provided");
+    return;
+  }
+
+  try {
+    // Create a white background
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint = Paint()..color = Colors.white;
+    canvas.drawRect(Rect.fromLTWH(0, 0, 300, 350), paint);
+
+    // Generate QR code image
+    final qrValidationResult = QrValidator.validate(
+      data: qrCodeData,
+      version: QrVersions.auto,
+      errorCorrectionLevel: QrErrorCorrectLevel.L,
+    );
+    if (qrValidationResult.status != QrValidationStatus.valid) {
+      throw Exception('QR Code generation failed');
+    }
+    final qrCode = qrValidationResult.qrCode;
+    final qrPainter = QrPainter.withQr(
+      qr: qrCode!,
+      color: Colors.black,
+      emptyColor: Colors.white,
+      gapless: true,
+      embeddedImageStyle: null,
+      embeddedImage: null,
+    );
+
+    final qrImageSize = 300.0;
+    final offSet = (300 - qrImageSize) / 2;
+    final qrImageRect = Rect.fromLTWH(offSet, offSet, qrImageSize, qrImageSize);
+    qrPainter.paint(canvas, qrImageRect.size);
+
+    // Overlay additional information
+    final textStyle = ui.TextStyle(
+      color: Colors.black,
+      fontSize: 12.0,
+    );
+    final paragraphBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
+      textAlign: TextAlign.center,
+      fontSize: 12.0,
+    ))
+      ..pushStyle(textStyle)
+      ..addText('Date Downloaded: ${DateTime.now().toString()} \nStatus: $status');
+    final paragraph = paragraphBuilder.build();
+    paragraph.layout(const ui.ParagraphConstraints(width: 300));
+    canvas.drawParagraph(paragraph, const Offset(0, 310));
+
+    // Convert canvas to image
+    final generatedImage = await recorder.endRecording().toImage(300, 350);
+    final byteDataWithText = await generatedImage.toByteData(format: ui.ImageByteFormat.png);
+    final bytesWithText = byteDataWithText!.buffer.asUint8List();
+
+    // Create a temporary file path
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    String filePath = '$tempPath/qr_code_with_text.png';
+
+    // Write the image bytes to a temporary file
+    await File(filePath).writeAsBytes(bytesWithText);
+
+    // Save the image to the photo gallery
+    await GallerySaver.saveImage(filePath);
+
+    // Show a toast or snackbar indicating successful download
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('QR Code saved to gallery')),
+    );
+  } catch (e) {
+    // Show error message if download fails
+    print('Error: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to save QR Code')),
+    );
+  }
+}
+
 
   Widget _buildDonateButton(BuildContext context) {
   return Center(
