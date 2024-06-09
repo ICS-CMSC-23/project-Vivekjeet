@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:telephony/telephony.dart';
 
 class DonationDetailsPage extends StatefulWidget {
   final DonationModel donation;
@@ -24,6 +25,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
   bool _isCompleteStatus = false;
   List<File> _uploadedPhotos = [];
   final ImagePicker _picker = ImagePicker();
+  final telephony = Telephony.instance;
 
   @override
   void initState() {
@@ -62,6 +64,8 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
       _uploadedPhotos.removeAt(index);
     });
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +150,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                   child: Text(value),
                 );
               }).toList(),
-              onChanged: (String? newValue) {
+              onChanged: _isCompleteStatus ? null : (String? newValue) {
                 setState(() {
                   if (newValue == 'Complete' && _uploadedPhotos.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -154,15 +158,22 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                         content: Text('Please upload photos before marking as Complete.'),
                       ),
                     );
+                  } else if (newValue == 'Complete' && widget.donation.donationDrive == null){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please assign it to a donation drive before marking as Complete.'),
+                      ),
+                    );
                   } else {
                     _selectedStatus = newValue!;
                     _isCompleteStatus = _selectedStatus == 'Complete';
-                  context.read<DonationsProvider>().updateStatus(widget.donation.donationId, _selectedStatus);
+                    context.read<DonationsProvider>().updateStatus(widget.donation.donationId, _selectedStatus);
                   }
                 });
               },
             ),
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            if (!_isCompleteStatus) ...[
               _buildSectionTitle('Upload Photos as Proofs'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -220,6 +231,16 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                       ),
                     );
 
+                    String message = "Hello, ${widget.donorData['name']}! Your donation has arrived to its destination.";                      
+                    try{
+                      telephony.sendSms(
+                        to: widget.donorData['contactNumber'],
+                        message: message.trim()
+                      );
+                    } catch (e) {
+                      print("Error: $e");
+                    }
+
                     Navigator.pop(context);
                   },
                   style: ButtonStyle(
@@ -227,10 +248,16 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                       const Color(0xFF618264),
                     ),
                   ),
-                  child:
-                    Text('Upload', style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Upload',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+            ],
             const Divider(),
             _buildSectionTitle('Donor Details'),
             _buildDetailRow('Username:', widget.donorData['userName']),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:telephony/telephony.dart';
 import '../../../models/donation_model.dart';
 import '../../../providers/drive_provider.dart';
 import '../donation_details_page.dart';
@@ -39,6 +40,7 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
   late Map<String, dynamic> driveData;
   final User? user = FirebaseAuth.instance.currentUser;
   late TabController _tabController;
+  final telephony = Telephony.instance;
 
   @override
   void initState() {
@@ -596,10 +598,16 @@ class _DonationDriveDetailsPageState extends State<DonationDriveDetailsPage> wit
                            });
 
                             await context.read<DriveProvider>().addDonationToDrive(widget.driveId, donationData['donationId']);
-                            // String path = "donationDrive/${widget.driveId}";
-                            // DocumentReference driveRef = FirebaseFirestore.instance.doc(path);
-                            // await FirebaseFirestore.instance.collection('donations').doc(donationData['donationId']).update({'donationDrive': driveRef});
                             await context.read<DonationsProvider>().addDrive(donationData['donationId'], widget.driveId);
+                            String message = "Hello, ${donorData['userName']}! Your donation has been assigned to ${widget.driveName}.";                      
+                            try{
+                              telephony.sendSms(
+                                to: donorData['contactNumber'],
+                                message: message.trim()
+                              );
+                            } catch (e) {
+                              print("Error: $e");
+                            }
                           }
                         },
                       ),
