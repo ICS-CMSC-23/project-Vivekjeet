@@ -33,7 +33,6 @@ class _DonorDonateState extends State<DonorDonate> {
   final _formKey = GlobalKey<FormState>();
   // final _current_donor = FirebaseAuth.instance.currentUser;
   final DocumentReference _currentDonorId = FirebaseFirestore.instance.doc('users/${FirebaseAuth.instance.currentUser!.uid}');
-  
 
   final Map<String, Icon> _categoryIcons = {
     'Food': Icon(Icons.fastfood, color: Constants.iconColor),
