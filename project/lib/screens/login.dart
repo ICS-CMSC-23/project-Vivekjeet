@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
 import 'signup.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,7 +16,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   bool _obscureText = true;
-  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     final googleLogin = Padding(
-      key: const Key('loginButton'),
+      key: const Key('googleLoginButton'),
       padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
       child: SizedBox(
         width: 200.0,
@@ -143,33 +142,18 @@ class _LoginPageState extends State<LoginPage> {
         child: OutlinedButton(
           onPressed: () async {
             try {
-              setState(() {
-                isLoading = true;
-              });
-              await Provider.of<MyAuthProvider>(context, listen: false).signInWithGoogle();
+              await context.read<MyAuthProvider>().signInWithGoogle();
               if (context.mounted) {
                 Navigator.pop(context);
               }
-            } catch (e) {
-              // Handling Google Sign-In cancellation
-              if (e is Exception && (e.toString().contains('sign_in_canceled') || e.toString().contains('ERROR_ABORTED_BY_USER'))) {
-                // This is likely a user-cancelled action, handle as you see fit, maybe just log it
-                if (context.mounted) {
-                  print("User cancelled the Google sign-in process.");
-                }
-              } else {
-                // For actual errors, show a snackbar
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to sign in with Google: ${e.toString()}"))
-                  );
-                }
-              }
-            } finally {
-              if (context.mounted) {
-                setState(() {
-                  isLoading = false;
-                });
+            } catch (error) {
+              if (error is FirebaseAuthException && error.code != 'ERROR_ABORTED_BY_USER') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to sign in with Google: ${error.toString()}'),
+                    backgroundColor: Colors.red,
+                  )
+                );
               }
             }
           },
@@ -177,23 +161,17 @@ class _LoginPageState extends State<LoginPage> {
             side: MaterialStateProperty.all<BorderSide>(const BorderSide(color: Color(0xFF618264))),
             shape: MaterialStateProperty.all<OutlinedBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0))),
           ),
-          child: isLoading
-            ? const CircularProgressIndicator()
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Image.asset(
-                    'images/google.png',
-                    height: 24,
-                    width: 24,
-                  ),
-                  const SizedBox(width: 40,),
-                  const Text(
-                    "Sign in with Google",
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Image.asset('images/google.png', height: 24, width: 24),
+              const SizedBox(width: 40,),
+              const Text(
+                "Sign in with Google",
+                style: TextStyle(fontSize: 16, color: Colors.black),
               ),
+            ],
+          ),
         ),
       ),
     );
