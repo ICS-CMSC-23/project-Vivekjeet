@@ -95,7 +95,15 @@ class FirebaseAuthAPI {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      UserCredential userCredential = await auth.signInWithCredential(credential);
+      
+      // Signing in with the credential
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      
+      // Retrieve the Google profile picture and store it in Firestore under the user's document
+      FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'profilePicture': googleUser.photoUrl,  // Store the Google profile photo URL
+      }, SetOptions(merge: true));
+
       return userCredential;
     }
     throw FirebaseAuthException(
