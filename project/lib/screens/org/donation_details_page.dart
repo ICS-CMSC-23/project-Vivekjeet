@@ -22,7 +22,7 @@ class DonationDetailsPage extends StatefulWidget {
 class _DonationDetailsPageState extends State<DonationDetailsPage> {
   late String _selectedStatus;
   late PageController _pageController;
-  bool _isCompleteStatus = false;
+  bool _isCompletedStatus = false;
   List<File> _uploadedPhotos = [];
   final ImagePicker _picker = ImagePicker();
   final telephony = Telephony.instance;
@@ -32,7 +32,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
     super.initState();
     _selectedStatus = widget.donation.status;
     _pageController = PageController();
-    _isCompleteStatus = _selectedStatus == 'Complete';
+    _isCompletedStatus = _selectedStatus == 'Completed';
   }
 
   @override
@@ -142,7 +142,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                 'Pending',
                 'Confirmed',
                 'Scheduled for Pick-up',
-                'Complete',
+                'Completed',
                 'Canceled',
               ].map((String value) {
                 return DropdownMenuItem<String>(
@@ -150,30 +150,30 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                   child: Text(value),
                 );
               }).toList(),
-              onChanged: _isCompleteStatus ? null : (String? newValue) {
+              onChanged: _isCompletedStatus ? null : (String? newValue) {
                 setState(() {
-                  if (newValue == 'Complete' && _uploadedPhotos.isEmpty) {
+                  if (newValue == 'Completed' && _uploadedPhotos.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please upload photos before marking as Complete.'),
+                        content: Text('Please upload photos before marking as Completed.'),
                       ),
                     );
-                  } else if (newValue == 'Complete' && widget.donation.donationDrive == null){
+                  } else if (newValue == 'Completed' && widget.donation.donationDrive == null){
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please assign it to a donation drive before marking as Complete.'),
+                        content: Text('Please assign it to a donation drive before marking as Completed.'),
                       ),
                     );
                   } else {
                     _selectedStatus = newValue!;
-                    _isCompleteStatus = _selectedStatus == 'Complete';
+                    _isCompletedStatus = _selectedStatus == 'Completed';
                     context.read<DonationsProvider>().updateStatus(widget.donation.donationId, _selectedStatus);
                   }
                 });
               },
             ),
             const SizedBox(height: 16),
-            if (!_isCompleteStatus) ...[
+            if (!_isCompletedStatus) ...[
               _buildSectionTitle('Upload Photos as Proofs'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -222,7 +222,7 @@ class _DonationDetailsPageState extends State<DonationDetailsPage> {
                     context.read<DonationsProvider>().uploadProofs(widget.donation.donationId, _uploadedPhotos);
 
                     // Update status to "Complete"
-                    context.read<DonationsProvider>().updateStatus(widget.donation.donationId, 'Complete');
+                    context.read<DonationsProvider>().updateStatus(widget.donation.donationId, 'Completed');
 
                     // Show Snackbar
                     ScaffoldMessenger.of(context).showSnackBar(
