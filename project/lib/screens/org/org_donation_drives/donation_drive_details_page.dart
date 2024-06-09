@@ -554,7 +554,7 @@ Future<void> removeDonation(Map<String, dynamic> donationData, int index) async 
 Widget buildOtherDonationTile(DonationModel donation, Map<String, dynamic> donationData, Map<String, dynamic> donorData) {
   return Column(
     children: [
-      donation.donationDrive == null
+      donationData['donationDrive'] == null
       ? Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         decoration: BoxDecoration(
