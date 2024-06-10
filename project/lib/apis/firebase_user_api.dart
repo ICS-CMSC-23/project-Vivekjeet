@@ -1,10 +1,8 @@
-
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
 
 class FirebaseUserAPI {
   static final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -26,16 +24,22 @@ class FirebaseUserAPI {
   }
 
   Stream<QuerySnapshot> getAllOrganizations() {
-    return db.collection("users")
-          .where('type', isEqualTo: 'Organization')
-          .snapshots();
+    return db
+        .collection("users")
+        .where('type', isEqualTo: 'Organization')
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getAllDonors() {
+    return db.collection("users").where('type', isEqualTo: 'Donor').snapshots();
   }
 
   Stream<DocumentSnapshot> getUserById(String userId) {
     return db.collection("users").doc(userId).snapshots();
   }
-  
-  Future<String> editOrg(String? id, String username, String orgname, String contact, String description, List<String> addresses) async {
+
+  Future<String> editOrg(String? id, String username, String orgname,
+      String contact, String description, List<String> addresses) async {
     try {
       await db.collection('users').doc(id).update({
         'userName': username,
@@ -50,12 +54,27 @@ class FirebaseUserAPI {
     }
   }
 
+  Future<String> editOrgStatus(String? id, bool status) async {
+    try {
+      await db.collection('users').doc(id).update({'isApproved': status});
+      return "Successfully Edited Organization Status!";
+    } on FirebaseException catch (e) {
+      return "Failed with error '${e.code}: ${e.message}";
+    }
+  }
+
   Future<String> uploadProfilePicture(String? id, File profilePicture) async {
-    try{
+    try {
       String imagePath = "users/$id/images/profilepicture";
-      TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(profilePicture);
+      TaskSnapshot snapshot = await FirebaseStorage.instance
+          .ref()
+          .child(imagePath)
+          .putFile(profilePicture);
       String downloadUrl = await snapshot.ref.getDownloadURL();
-      await db.collection('users').doc(id).update({'profilePicture': downloadUrl});
+      await db
+          .collection('users')
+          .doc(id)
+          .update({'profilePicture': downloadUrl});
       return "Successfully uploaded profile picture";
     } on FirebaseException catch (e) {
       return "Failed with error '${e.code}: ${e.message}";
