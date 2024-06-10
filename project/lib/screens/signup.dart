@@ -447,7 +447,7 @@ class _SignupPageState extends State<SignupPage> {
                 'addresses': addressControllers.map((controller) => controller.text.trim()).toList(),
                 'contactNumber': contactController.text.trim(),
                 'type': isDonor ? 'Donor' : 'Organization',
-                'isApproved': false,
+                'isApproved': null,
                 'organizationName': organizationNameController.text.isEmpty == true ? null : organizationNameController.text.trim(),
                 'description': null,
                 'proofs': null,
