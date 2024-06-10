@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project/screens/splashscreen.dart';
-import 'admin_homepage.dart';
+import 'admin/admin_homepage.dart';
 import 'donor/donor_homepage.dart';
 import 'login.dart';
 import 'org/org_homepage.dart';
@@ -35,7 +35,10 @@ class UserHomepage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -59,7 +62,7 @@ class UserHomepage extends StatelessWidget {
       case 'Organization':
         return const OrgHomepage();
       case 'Admin':
-        return const AdminHomepage();
+        return const AdminHomePage();
       default:
         return const Text('Invalid user type');
     }

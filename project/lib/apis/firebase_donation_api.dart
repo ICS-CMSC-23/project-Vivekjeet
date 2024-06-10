@@ -15,7 +15,7 @@ class FirebaseDonationAPI {
   }
 
   Stream<QuerySnapshot> getDonations() {
-    DocumentReference orgRef = db.doc('users/${user!.uid}');
+    DocumentReference orgRef = db.doc('users/${user?.uid}');
     return db
         .collection('donations')
         .where('organization', isEqualTo: orgRef)
@@ -29,7 +29,8 @@ class FirebaseDonationAPI {
         .snapshots();
   }
 
-  Stream<QuerySnapshot> getDonationsByDonorToOrganization(String donorId, String orgId) {
+  Stream<QuerySnapshot> getDonationsByDonorToOrganization(
+      String donorId, String orgId) {
     return db
         .collection('donations')
         .where('donor', isEqualTo: db.doc('users/$donorId'))
@@ -44,12 +45,16 @@ class FirebaseDonationAPI {
         .snapshots();
   }
 
-  Future<List<String>> uploadPhotos(String orgId, String donationId, List<File> photos) async {
+  Future<List<String>> uploadPhotos(
+      String orgId, String donationId, List<File> photos) async {
     List<String> urls = [];
     for (int i = 0; i < photos.length; i++) {
       try {
         String imagePath = "users/$orgId/images/donations/$donationId/photo$i";
-        TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
+        TaskSnapshot snapshot = await FirebaseStorage.instance
+            .ref()
+            .child(imagePath)
+            .putFile(photos[i]);
         String downloadUrl = await snapshot.ref.getDownloadURL();
         urls.add(downloadUrl);
       } catch (e) {
@@ -63,19 +68,21 @@ class FirebaseDonationAPI {
     try {
       print("Adding donation...");
       final docRef = await db.collection("donations").add(donation);
-      await db.collection('donations').doc(docRef.id).update({'donationId': docRef.id});
+      await db
+          .collection('donations')
+          .doc(docRef.id)
+          .update({'donationId': docRef.id});
       print("Donation added with ID: ${docRef.id}");
       final orgRef = donation['organization'];
       final orgId = orgRef.path.split('/').last;
 
       List<String> urls = await uploadPhotos(orgId, docRef.id, photos);
       await db.collection('donations').doc(docRef.id).update({'photos': urls});
-      
+
       print('Donation added successfully!');
-      
+
       return docRef.id;
     } on FirebaseException catch (e) {
-
       return "Failed with error '${e.code}: ${e.message}";
     }
   }
@@ -100,22 +107,31 @@ class FirebaseDonationAPI {
   }
 
   Future<void> updateStatus(String? donationId, String newStatus) async {
-    await db.collection('donations').doc(donationId).update({'status': newStatus});
+    await db
+        .collection('donations')
+        .doc(donationId)
+        .update({'status': newStatus});
   }
 
   Future<void> removeDrive(String? donationId) async {
-    await db.collection('donations').doc(donationId).update({'donationDrive': null});
+    await db
+        .collection('donations')
+        .doc(donationId)
+        .update({'donationDrive': null});
   }
 
   Future<void> addDrive(String? donationId, String driveId) async {
     String path = "donationDrives/$driveId";
     DocumentReference driveRef = db.doc(path);
 
-    await db.collection('donations').doc(donationId).update({'donationDrive': driveRef});
+    await db
+        .collection('donations')
+        .doc(donationId)
+        .update({'donationDrive': driveRef});
   }
 
   Stream<QuerySnapshot> getDonationsWithNoDrive() {
-    DocumentReference orgRef = db.doc('users/${user!.uid}');
+    DocumentReference orgRef = db.doc('users/${user?.uid}');
     return db
         .collection('donations')
         .where('donationDrive', isEqualTo: null)
@@ -128,7 +144,10 @@ class FirebaseDonationAPI {
     for (int i = 0; i < photos.length; i++) {
       try {
         String imagePath = "donations/$donationId/images/proofs/photo$i";
-        TaskSnapshot snapshot = await FirebaseStorage.instance.ref().child(imagePath).putFile(photos[i]);
+        TaskSnapshot snapshot = await FirebaseStorage.instance
+            .ref()
+            .child(imagePath)
+            .putFile(photos[i]);
         String downloadUrl = await snapshot.ref.getDownloadURL();
         urls.add(downloadUrl);
       } catch (e) {

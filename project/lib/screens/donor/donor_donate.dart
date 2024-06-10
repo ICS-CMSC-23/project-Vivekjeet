@@ -132,6 +132,16 @@ class _DonorDonateState extends State<DonorDonate> {
     }
   }
 
+  Future<void> _pickImageFromGallery() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _photo = File(image.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -381,15 +391,21 @@ class _DonorDonateState extends State<DonorDonate> {
   }
 
   Widget _buildAddItemButton() {
-    return Center( 
-      child: ElevatedButton(
-        onPressed: () {
+    return Center(
+      child: InkWell(
+        onTap: () {
           if (_textController.text.isNotEmpty) {
             _addItem(_textController.text);
           }
         },
-        child: Text('Add Item', style: TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+        child: Text(
+          'Add Item',
+          style: TextStyle(
+            color: Constants.primaryColor, // Primary color for text
+            fontSize: 16,
+            fontWeight: FontWeight.bold
+          ),
+        ),
       ),
     );
   }
@@ -436,7 +452,7 @@ class _DonorDonateState extends State<DonorDonate> {
     return ListTile(
       leading: Icon(Icons.calendar_today, color: Constants.iconColor),
       title: Text('${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
       onTap: () async {
         DateTime? picked = await showDatePicker(
           context: context,
@@ -457,7 +473,7 @@ class _DonorDonateState extends State<DonorDonate> {
     return ListTile(
       leading: Icon(Icons.access_time, color: Constants.iconColor),
       title: Text('${_selectedTime.format(context)}',
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
       onTap: () async {
         TimeOfDay? picked = await showTimePicker(
           context: context,
@@ -571,14 +587,19 @@ class _DonorDonateState extends State<DonorDonate> {
                 child: Icon(Icons.camera_alt, color: Colors.white70, size: 50),
               ),
         SizedBox(height: 10),
-        Center(
-          child: ElevatedButton(
-            onPressed: _pickImageFromCamera,
-            child: Text('Take Photo', style: TextStyle(color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Constants.primaryColor),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.camera_alt),
+                onPressed: _pickImageFromCamera,
+              ),
+              IconButton(
+                icon: const Icon(Icons.photo),
+                onPressed: _pickImageFromGallery,
+              ),
+            ],
           ),
-        ),
         SizedBox(height: 20),
       ],
     );
@@ -781,7 +802,8 @@ void _downloadQRCode(BuildContext context, String qrCodeData, String status) asy
 
 
   Widget _buildDonateButton(BuildContext context) {
-  return Center(
+  return Container(
+    width: double.infinity, // This makes the container fill the screen width
     child: ElevatedButton(
       onPressed: () async {
         // Ensure that the selected organization is passed as an argument
@@ -868,9 +890,18 @@ void _downloadQRCode(BuildContext context, String qrCodeData, String status) asy
               SnackBar(content: Text('Please complete the form')));
         }
       },
-      child: Text('Donate', style: TextStyle(color: Colors.white)),
-      style: ElevatedButton.styleFrom(backgroundColor: Constants.primaryColor),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Constants.primaryColor, 
+        padding: EdgeInsets.symmetric(vertical: 15), 
       ),
-    );
+      child: Text(
+        'Confirm Donation',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+      ),
+    ),
+  );
   }
 }
