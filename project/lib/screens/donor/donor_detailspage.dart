@@ -128,7 +128,7 @@ class OrganizationDetailsBody extends StatelessWidget {
           Text(
             organization.organizationName ?? 'No organization name',
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -169,12 +169,12 @@ class OrganizationDetailsBody extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        organization.organizationName ?? 'No organization name',
+                      const Text(
+                        'Description',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
-                          fontSize: 24,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -211,9 +211,9 @@ class OrganizationDetailsBody extends StatelessWidget {
                                         topLeft: Radius.circular(15),
                                         topRight: Radius.circular(15),
                                       ),
-                                      child: drive['image'] != null
+                                      child: drive['photos'] != null
                                           ? Image.network(
-                                              drive['image'],
+                                              drive['photos'][0],
                                               height: 100,
                                               width: double.infinity,
                                               fit: BoxFit.cover,
