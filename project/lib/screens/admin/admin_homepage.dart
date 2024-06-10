@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project/providers/user_provider.dart';
 import 'package:project/providers/auth_provider.dart';
@@ -92,8 +91,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     left: 0,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(30),
-                      child: SvgPicture.asset(
-                        'images/bg.svg',
+                      child: Image.asset(
+                        'images/bg.png',
                         width: MediaQuery.of(context).size.width - 40,
                       ),
                     ),
@@ -410,7 +409,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                                                     child:
                                                         SingleChildScrollView(
                                                       child: Text(
-                                                        '${currentOrganization.description}',
+                                                        '${currentOrganization.description ?? 'No information available.'}',
                                                         style: const TextStyle(
                                                           color:
                                                               Color(0xFF00371D),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:project/providers/donation_provider.dart';
 import 'package:project/providers/user_provider.dart';
 import 'package:project/screens/landingpage.dart';
@@ -11,13 +12,16 @@ import './screens/login.dart';
 import 'providers/drive_provider.dart';
 import 'screens/donor/donor_homepage.dart';
 import 'screens/org/org_homepage.dart';
-import './screens/admin_homepage.dart';
+import './screens/admin/admin_homepage.dart';
+import './screens/admin/admin_donationspage.dart';
+import './screens/admin/admin_donorspage.dart';
+import './screens/admin/admin_orgapprovalpage.dart';
 import 'screens/donor/donor_donate.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, 
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   runApp(
@@ -43,15 +47,23 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        useMaterial3: true,
       ),
       routes: {
-        '/': (context) => LandingPage(),
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignupPage(),
-        '/donorhomepage': (context) => const DonorHomepage(),
-        '/orghomepage': (context) => const OrgHomepage(),
-        '/adminhomepage': (context) => const AdminHomepage(),
-        '/donor_donate': (context) => const DonorDonate(),
+        '/': (context) => const AdminHomePage(),
+        // '/': (context) => LandingPage(),
+        // '/login': (context) => const LoginPage(),
+        // '/signup': (context) => const SignupPage(),
+        // '/donorhomepage': (context) => const DonorHomepage(),
+        // '/orghomepage': (context) => const OrgHomepage(),
+        // '/donor_donate': (context) => const DonorDonate(),
+        // '/adminhomepage': (context) => const AdminHomePage(),
+        '/admin-donorslist': (context) => const AdminDonorsPage(),
+        '/admin-approvals': (context) => const AdminApprovalPage(),
+        '/admin-org-donationslist': (context) => const AdminDonationsPage(),
       },
     );
   }
