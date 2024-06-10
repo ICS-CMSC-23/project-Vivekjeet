@@ -178,16 +178,16 @@ class _DonationsPageState extends State<DonationsPage> {
   Widget build(BuildContext context) {
     DocumentReference orgRef = FirebaseFirestore.instance.doc('users/${FirebaseAuth.instance.currentUser!.uid}');
 
-    // Stream of donations filtered by organization reference and selected status
     Stream<QuerySnapshot> donationsStream = FirebaseFirestore.instance
         .collection('donations')
         .where('organization', isEqualTo: orgRef)
         .where('status', isEqualTo: _selectedStatus == 'All' ? null : _selectedStatus)
         .snapshots();
 
-    return Column(
+    return Stack(
       children: [
-        Expanded(
+        // Donations list
+        Positioned.fill(
           child: StreamBuilder<QuerySnapshot>(
             stream: donationsStream,
             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -209,163 +209,160 @@ class _DonationsPageState extends State<DonationsPage> {
                   ),
                 );
               } else {
-                return Stack(
-                  children: [
-                    GridView.builder(
-                      itemCount: snapshot.data!.docs.length,
-                      physics: const BouncingScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.8,
-                      ),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        DonationModel donation = DonationModel.fromJson(
-                            snapshot.data!.docs[index].data() as Map<String, dynamic>);
-                    
-                        // Fetch donor data using the donor reference
-                        return StreamBuilder<DocumentSnapshot>(
-                          stream: (donation.donor).snapshots(),
-                          builder: (context, donorSnapshot) {
-                            if (donorSnapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
-                            }
-                            if (donorSnapshot.hasError) {
-                              return Center(child: Text("Error: ${donorSnapshot.error}"));
-                            }
-                            if (!donorSnapshot.hasData || !donorSnapshot.data!.exists) {
-                              return const Center(child: Text("Donor not found"));
-                            }
-                    
-                            final donorData = donorSnapshot.data!.data() as Map<String, dynamic>;
-                    
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DonationDetailsPage(
-                                      donation: donation,
-                                      donorData: donorData,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
-                                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0xFFB0D9B1),
-                                      blurRadius: 15,
-                                      offset: Offset(10, 10),
-                                    )
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {},
-                                      child: Container(
-                                        margin: const EdgeInsets.all(2),
-                                        child: donation.photos == null || donation.photos!.isEmpty
-                                            ? Image.asset(
-                                                'images/login_logo.png',
-                                                height: 100,
-                                                width: 120,
-                                                fit: BoxFit.fill,
-                                              )
-                                            : Image.network(
-                                                donation.photos![0],
-                                                height: 100,
-                                                width: 120,
-                                              ),
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    Container(
-                                      padding: const EdgeInsets.only(bottom: 8),
-                                      alignment: Alignment.centerLeft,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            donorData['userName'], 
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text('Status: ${donation.status}', style: const TextStyle(fontSize: 12),),
-                                          donation.isPickup
-                                              ? const Text('Mode: Pickup', style: TextStyle(fontSize: 12))
-                                              : const Text('Mode: Drop off', style: TextStyle(fontSize: 12))
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                return GridView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.8,
+                  ),
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    DonationModel donation = DonationModel.fromJson(
+                        snapshot.data!.docs[index].data() as Map<String, dynamic>);
+                
+                    return StreamBuilder<DocumentSnapshot>(
+                      stream: (donation.donor).snapshots(),
+                      builder: (context, donorSnapshot) {
+                        if (donorSnapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (donorSnapshot.hasError) {
+                          return Center(child: Text("Error: ${donorSnapshot.error}"));
+                        }
+                        if (!donorSnapshot.hasData || !donorSnapshot.data!.exists) {
+                          return const Center(child: Text("Donor not found"));
+                        }
+
+                        final donorData = donorSnapshot.data!.data() as Map<String, dynamic>;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DonationDetailsPage(
+                                  donation: donation,
+                                  donorData: donorData,
                                 ),
                               ),
                             );
                           },
-                        );
-                      },
-                    ),
-                    Positioned(
-                      bottom: 20,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(200, 255, 255, 255), 
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2), 
-                                blurRadius: 10, 
-                                offset: const Offset(0, 5), 
-                              ),
-                            ],
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _selectedStatus,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedStatus = newValue!;
-                                });
-                              },
-                              items: _statusOptions.map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                              icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                              ),
-                              dropdownColor: const Color.fromARGB(200, 255, 255, 255), 
+                          child: Container(
+                            padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0xFFB0D9B1),
+                                  blurRadius: 15,
+                                  offset: Offset(10, 10),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                    margin: const EdgeInsets.all(2),
+                                    child: donation.photos == null || donation.photos!.isEmpty
+                                        ? Image.asset(
+                                            'images/login_logo.png',
+                                            height: 100,
+                                            width: 120,
+                                            fit: BoxFit.fill,
+                                          )
+                                        : Image.network(
+                                            donation.photos![0],
+                                            height: 100,
+                                            width: 120,
+                                          ),
+                                  ),
+                                ),
+                                const Divider(),
+                                Container(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        donorData['userName'], 
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text('Status: ${donation.status}', style: const TextStyle(fontSize: 12),),
+                                      donation.isPickup
+                                          ? const Text('Mode: Pickup', style: TextStyle(fontSize: 12))
+                                          : const Text('Mode: Drop off', style: TextStyle(fontSize: 12))
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
+                        );
+                      },
+                    );
+                  },
                 );
               }
             },
+          ),
+        ),
+        // Floating dropdown filter
+        Positioned(
+          bottom: 20,
+          left: 20,
+          right: 20,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9), 
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedStatus,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedStatus = newValue!;
+                    });
+                  },
+                  items: _statusOptions.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                  dropdownColor: const Color.fromARGB(200, 255, 255, 255),
+                ),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 }
+
 
 
