@@ -22,7 +22,7 @@ class _DonorProfileState extends State<DonorProfile> {
     super.initState();
     _donor = FirebaseAuth.instance.currentUser;
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +64,16 @@ class _DonorProfileBodyState extends State<DonorProfileBody> {
   void initState() {
     super.initState();
     _donorData = widget.donorData;
+  }
+
+  void _refreshDonorData() {
+    FirebaseFirestore.instance.collection('users').doc(_donor!.uid).get().then((snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          _donorData = snapshot.data() as Map<String, dynamic>;
+        });
+      }
+    });
   }
 
   SizedBox profilePicture() {
@@ -142,7 +152,7 @@ class _DonorProfileBodyState extends State<DonorProfileBody> {
     );
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -204,14 +214,16 @@ class _DonorProfileBodyState extends State<DonorProfileBody> {
                     width: double.infinity, // Makes the container fill the available width
                     child: ElevatedButton(
                       onPressed: () async {
-                        bool updated = await Navigator.push(
+                        // Navigate to EditDonorProfile and wait for a result indicating if updates were made
+                        final updated = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => EditDonorProfile(donorData: _donorData),
                           ),
                         );
-                        if (updated) {
-                          setState(() {});
+                        // If the update was made, refresh the donor data from Firestore
+                        if (updated != null && updated) {
+                          _refreshDonorData();
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -229,7 +241,7 @@ class _DonorProfileBodyState extends State<DonorProfileBody> {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -487,7 +499,30 @@ Widget build(BuildContext context) {
             child: const Text('Add Address'),
           ),
           ElevatedButton(
-            onPressed: _saveProfile,
+            onPressed: () async {
+              // Prepare the data to be updated
+              var updatedData = {
+                'name': _nameController.text.trim(),
+                'userName': _userNameController.text.trim(),
+                'contactNumber': _contactNumberController.text.trim(),
+                'addresses': _addressControllers.map((controller) => controller.text.trim()).toList(),
+              };
+
+              // Optionally handle profile picture update
+              if (_profileImage != null) {
+                Provider.of<UsersProvider>(context, listen: false)
+                    .uploadProfilePicture(FirebaseAuth.instance.currentUser!.uid, _profileImage!);
+              }
+
+              // Update the data in Firestore
+              FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid)
+                .update(updatedData).then((_) {
+                  Navigator.pop(context, true);  // Navigate back with success indication
+                }).catchError((error) {
+                  print('Error updating profile: $error');
+                  Navigator.pop(context, false);  // Navigate back with failure indication
+                });
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF618264),
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
