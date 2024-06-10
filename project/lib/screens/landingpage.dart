@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project/providers/user_provider.dart';
 import 'package:project/screens/splashscreen.dart';
+import 'package:provider/provider.dart';
 import 'admin/admin_homepage.dart';
 import 'donor/donor_homepage.dart';
 import 'login.dart';
@@ -45,7 +47,10 @@ class UserHomepage extends StatelessWidget {
         } else {
           if (snapshot.hasData && snapshot.data != null) {
             var userType = snapshot.data!['type'];
-            // var userType = "Donor";
+            if (userType == 'Organization') {
+              return _buildHomepageWidget(context, userType,
+                  status: snapshot.data!['isApproved']);
+            }
             return _buildHomepageWidget(context, userType);
           } else {
             return const Text('Error fetching user data');
@@ -55,12 +60,75 @@ class UserHomepage extends StatelessWidget {
     );
   }
 
-  Widget _buildHomepageWidget(BuildContext context, String userType) {
+  Widget _buildHomepageWidget(BuildContext context, String userType,
+      {bool? status}) {
     switch (userType) {
       case 'Donor':
         return const DonorHomepage();
       case 'Organization':
-        return const OrgHomepage();
+        if (status == null) {
+          return Center(
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    "Your account is queued for approval.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Color(0xFF00371D),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    child: const Text('Back',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/login');
+                    },
+                  )
+                ],
+              ),
+            ),
+          );
+        } else if (status == false) {
+          return Center(
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    "Your account has been disapproved.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Color(0xFF00371D),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    child: const Text('Back',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/login');
+                    },
+                  )
+                ],
+              ),
+            ),
+          );
+        } else {
+          return const OrgHomepage();
+        }
       case 'Admin':
         return const AdminHomePage();
       default:
