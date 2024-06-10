@@ -10,7 +10,27 @@ Members:
   QUEJADA, ROCHE FAUSTINO (rfquejada@up.edu.ph)
   
   TANIG, STEPHANIE VILLANUEVA (svtanig@up.edu.ph)
+
 # Program Description 
-Elbiyaya is a mobile application designed to facilitate donations from users to various organizations. The app aims to provide a simple and secure platform for users to make food, clothes monetary and other contributions and for organizations to manage and receive these donations effectively.
+Elbiyaya is a mobile application designed to facilitate donations from donors to various organizations. The app aims to provide a simple and secure platform for donors to make contributions of food, clothing, money, and other items, and for organizations to manage and receive these donations.
+
 # Installation Guide
-# How to use
+1. Clone the repository:
+```sh
+git clone https://github.com/ICS-CMSC-23/project-Vivekjeet.git
+```
+2. Navigate to the project directory:
+```sh
+cd project
+```
+3. Retrieve all the dependencies:
+```sh
+flutter pub get
+```
+4. Build the app APK:
+```sh
+flutter build apk
+```
+5. Install the app on your mobile device and run it.
+
+# How to Use
